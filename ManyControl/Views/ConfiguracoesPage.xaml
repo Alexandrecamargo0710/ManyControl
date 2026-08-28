@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ManyControl.ViewModels"
+             x:Class="ManyControl.Views.ConfiguracoesPage"
+             x:DataType="vm:ConfiguracoesViewModel"
+             Shell.NavBarIsVisible="False"
+             Title="Sincronização">
+
+    <ContentPage.Resources>
+        <Style x:Key="CardBorderStyle" TargetType="Border">
+            <Setter Property="Stroke" Value="#374151" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="StrokeShape">
+                <Setter.Value>
+                    <RoundRectangle CornerRadius="18" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="18">
+
+            <!-- Card 1: Conexão com o Google Drive (Modo NÃO CONECTADO) -->
+            <Border Style="{StaticResource CardBorderStyle}"
+                    BackgroundColor="#111827"
+                    IsVisible="{Binding IsGoogleDriveDisconnected}">
+                <VerticalStackLayout Spacing="16">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Google Drive" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                        <Label Text="Conecte sua conta do Google para sincronizar automaticamente seus dados na nuvem com backup duplo (pasta do Drive e armazenamento seguro)."
+                               TextColor="#9CA3AF"
+                               FontSize="13" />
+                    </VerticalStackLayout>
+
+                    <!-- Botão Oficial do Google com Logo SVG -->
+                    <Border Stroke="#E5E7EB"
+                            StrokeThickness="1"
+                            BackgroundColor="#FFFFFF"
+                            Padding="20,12"
+                            HeightRequest="52"
+                            HorizontalOptions="Start">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="26" />
+                        </Border.StrokeShape>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ConectarGoogleCommand}" />
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                            <Image Source="google_logo.png"
+                                   WidthRequest="22"
+                                   HeightRequest="22"
+                                   VerticalOptions="Center" />
+                            <Label Text="Fazer login com o Google"
+                                   TextColor="#1F2937"
+                                   FontSize="15"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Card 2: Conexão com o Google Drive (Modo CONECTADO) -->
+            <Border Style="{StaticResource CardBorderStyle}"
+                    BackgroundColor="#111827"
+                    IsVisible="{Binding IsGoogleDriveConnected}">
+                <VerticalStackLayout Spacing="16">
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                            <Image Source="google_logo.png" WidthRequest="20" HeightRequest="20" VerticalOptions="Center" />
+                            <Label Text="Google Drive Conectado" TextColor="#34D399" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <Border Grid.Column="1" StrokeThickness="0" BackgroundColor="#064E3B" Padding="10,4">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+                            <Label Text="● Ativo" TextColor="#A7F3D0" FontSize="11" FontAttributes="Bold" />
+                        </Border>
+                    </Grid>
+
+                    <Border Stroke="#374151" StrokeThickness="1" Padding="16,12" BackgroundColor="#1F2937">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12" />
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Conta Google vinculada:" TextColor="#9CA3AF" FontSize="12" />
+                            <Label Text="{Binding ConnectedEmail}" TextColor="White" FontSize="16" FontAttributes="Bold" />
+                            <Label Text="Pasta de destino: 'ManyControl' na raiz do seu Drive." TextColor="#6EE7B7" FontSize="12" Margin="0,4,0,0" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+                        <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="2">
+                            <Label Text="Última Sincronização" TextColor="#9CA3AF" FontSize="12" />
+                            <Label Text="{Binding LastSyncText}" TextColor="White" FontSize="14" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="2">
+                            <Label Text="Última Operação" TextColor="#9CA3AF" FontSize="12" />
+                            <Label Text="{Binding LastSyncModeText}" TextColor="#E5E7EB" FontSize="14" />
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="2">
+                            <Label Text="Status do Robô" TextColor="#9CA3AF" FontSize="12" />
+                            <Label Text="{Binding SyncStatusText}" TextColor="#A7F3D0" FontSize="13" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <HorizontalStackLayout Spacing="12">
+                        <Button Text="🔄 Sincronizar Agora"
+                                HeightRequest="46"
+                                FontSize="15"
+                                FontAttributes="Bold"
+                                BackgroundColor="#2563EB"
+                                TextColor="White"
+                                Command="{Binding SincronizarCommand}" />
+
+                        <Button Text="Desconectar Conta"
+                                HeightRequest="46"
+                                FontSize="14"
+                                BackgroundColor="#374151"
+                                TextColor="#F87171"
+                                Command="{Binding DesconectarGoogleCommand}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Card 3: Backups Manuais (Arquivos Locais em JSON) -->
+            <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#111827">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Backup Local (Arquivo Físico)" TextColor="White" FontSize="18" FontAttributes="Bold" />
+                    <Label Text="Exporte uma cópia de segurança física no seu computador ou restaure um backup antigo a qualquer momento sem precisar de internet."
+                           FontSize="13"
+                           TextColor="#9CA3AF" />
+
+                    <HorizontalStackLayout Spacing="12">
+                        <Button Text="Exportar Backup Local"
+                                BackgroundColor="#374151"
+                                TextColor="White"
+                                Command="{Binding ExportarBackupManualCommand}" />
+
+                        <Button Text="Restaurar de Arquivo"
+                                BackgroundColor="#374151"
+                                TextColor="White"
+                                Command="{Binding ImportarBackupManualCommand}" />
+                    </HorizontalStackLayout>
+
+                    <VerticalStackLayout Spacing="2" Margin="0,8,0,0">
+                        <Label Text="Caminho do banco local:" FontSize="11" TextColor="#6B7280" />
+                        <Label Text="{Binding LocalSyncPath}" FontSize="11" TextColor="#9CA3AF" LineBreakMode="CharacterWrap" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

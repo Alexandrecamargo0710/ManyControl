@@ -1,0 +1,404 @@
+using System.Collections.ObjectModel;
+using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using ManyControl.Models;
+using ManyControl.Services;
+
+namespace ManyControl.ViewModels;
+
+public partial class ExtratoViewModel : ObservableObject
+{
+    private static readonly CultureInfo PtBr = CultureInfo.GetCultureInfo("pt-BR");
+
+    private readonly FinanceService _financeService;
+    private readonly IDialogService _dialogService;
+
+    [ObservableProperty]
+    public partial DateTime MesReferencia { get; set; } = DateTime.Today;
+
+    [ObservableProperty]
+    public partial string MesAnoTexto { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial decimal TotalReceitasMes { get; set; }
+
+    [ObservableProperty]
+    public partial decimal TotalDespesasMes { get; set; }
+
+    [ObservableProperty]
+    public partial decimal SaldoMes { get; set; }
+
+    [ObservableProperty]
+    public partial int TotalTransacoesMes { get; set; }
+
+    [ObservableProperty]
+    public partial string FiltroTipo { get; set; } = "Todos";
+
+    [ObservableProperty]
+    public partial bool IsFiltroTodos { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool IsFiltroReceitas { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsFiltroDespesas { get; set; }
+
+    [ObservableProperty]
+    public partial double ProporcaoDespesas { get; set; }
+
+    [ObservableProperty]
+    public partial string ProporcaoTexto { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool IsCarregando { get; set; }
+
+    public ObservableCollection<TransacaoItemViewModel> Transacoes { get; } = new();
+
+    // Modal de Edição
+    [ObservableProperty]
+    public partial bool IsEditModalVisible { get; set; }
+
+    [ObservableProperty]
+    public partial string EditModalTitle { get; set; } = "Editar";
+
+    [ObservableProperty]
+    public partial string EditDescricao { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string EditValor { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial DateTime EditData { get; set; } = DateTime.Today;
+
+    [ObservableProperty]
+    public partial DateTime EditVencimento { get; set; } = DateTime.Today;
+
+    [ObservableProperty]
+    public partial bool EditRecorrente { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsEditRecorrenteVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsEditVencimentoVisible { get; set; }
+
+    private Guid? _editingId;
+    private string _editingTipo = string.Empty;
+
+    public ExtratoViewModel(FinanceService financeService, IDialogService dialogService)
+    {
+        _financeService = financeService;
+        _dialogService = dialogService;
+        AtualizarTextoMes();
+    }
+
+    [RelayCommand]
+    public async Task CarregarMesAsync()
+    {
+        IsCarregando = true;
+        try
+        {
+            AtualizarTextoMes();
+
+            var ano = MesReferencia.Year;
+            var mes = MesReferencia.Month;
+
+            // Processa recorrência caso haja despesas a gerar
+            await _financeService.ProcessarDespesasRecorrentesAsync(MesReferencia);
+
+            var receitas = await _financeService.GetReceitasPorMesAsync(ano, mes);
+            var despesas = await _financeService.GetDespesasPorMesAsync(ano, mes);
+
+            TotalReceitasMes = receitas.Sum(r => r.Valor);
+            TotalDespesasMes = despesas.Sum(d => d.Valor);
+            SaldoMes = TotalReceitasMes - TotalDespesasMes;
+
+            if (TotalReceitasMes > 0)
+            {
+                var perc = (double)(TotalDespesasMes / TotalReceitasMes);
+                ProporcaoDespesas = Math.Clamp(perc, 0.0, 1.0);
+                ProporcaoTexto = $"{perc:P0} das receitas comprometidas com despesas";
+            }
+            else if (TotalDespesasMes > 0)
+            {
+                ProporcaoDespesas = 1.0;
+                ProporcaoTexto = "Despesas realizadas sem receitas registradas";
+            }
+            else
+            {
+                ProporcaoDespesas = 0.0;
+                ProporcaoTexto = "Nenhuma movimentação registrada no mês";
+            }
+
+            var lista = new List<TransacaoItemViewModel>();
+
+            if (FiltroTipo is "Todos" or "Receitas")
+            {
+                foreach (var r in receitas)
+                {
+                    lista.Add(new TransacaoItemViewModel
+                    {
+                        Id = r.Id,
+                        Tipo = "Receita",
+                        Descricao = r.Descricao,
+                        Valor = r.Valor,
+                        Data = r.Data,
+                        Vencimento = null,
+                        Recorrente = false,
+                        ValorTexto = $"+ {r.Valor.ToString("C", PtBr)}",
+                        ValorCor = "#10B981", // Verde
+                        TipoBadge = "Receita",
+                        TipoBadgeCor = "#064E3B",
+                        ReceitaOriginal = r
+                    });
+                }
+            }
+
+            if (FiltroTipo is "Todos" or "Despesas")
+            {
+                foreach (var d in despesas)
+                {
+                    lista.Add(new TransacaoItemViewModel
+                    {
+                        Id = d.Id,
+                        Tipo = "Despesa",
+                        Descricao = d.Descricao,
+                        Valor = d.Valor,
+                        Data = d.Data,
+                        Vencimento = d.Vencimento,
+                        Recorrente = d.Recorrente,
+                        ValorTexto = $"- {d.Valor.ToString("C", PtBr)}",
+                        ValorCor = "#EF4444", // Vermelho
+                        TipoBadge = d.Recorrente ? "Recorrente" : "Despesa",
+                        TipoBadgeCor = d.Recorrente ? "#4C1D95" : "#7F1D1D",
+                        DespesaOriginal = d
+                    });
+                }
+            }
+
+            Transacoes.Clear();
+            foreach (var item in lista.OrderByDescending(x => x.Data).ThenByDescending(x => x.Descricao))
+            {
+                Transacoes.Add(item);
+            }
+
+            TotalTransacoesMes = Transacoes.Count;
+        }
+        finally
+        {
+            IsCarregando = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task MesAnteriorAsync()
+    {
+        MesReferencia = MesReferencia.AddMonths(-1);
+        await CarregarMesAsync();
+    }
+
+    [RelayCommand]
+    public async Task ProximoMesAsync()
+    {
+        MesReferencia = MesReferencia.AddMonths(1);
+        await CarregarMesAsync();
+    }
+
+    [RelayCommand]
+    public async Task MesAtualAsync()
+    {
+        MesReferencia = DateTime.Today;
+        await CarregarMesAsync();
+    }
+
+    [RelayCommand]
+    public async Task MudarFiltroAsync(string tipo)
+    {
+        FiltroTipo = tipo;
+        IsFiltroTodos = tipo == "Todos";
+        IsFiltroReceitas = tipo == "Receitas";
+        IsFiltroDespesas = tipo == "Despesas";
+        await CarregarMesAsync();
+    }
+
+    [RelayCommand]
+    public void EditarTransacao(TransacaoItemViewModel? item)
+    {
+        if (item is null)
+        {
+            return;
+        }
+
+        _editingId = item.Id;
+        _editingTipo = item.Tipo;
+        IsEditModalVisible = true;
+
+        EditDescricao = item.Descricao;
+        EditValor = item.Valor.ToString("N2", PtBr);
+        EditData = item.Data;
+
+        if (item.Tipo == "Receita")
+        {
+            EditModalTitle = "Editar receita";
+            IsEditRecorrenteVisible = false;
+            IsEditVencimentoVisible = false;
+        }
+        else
+        {
+            EditModalTitle = "Editar despesa";
+            IsEditRecorrenteVisible = true;
+            IsEditVencimentoVisible = true;
+            EditRecorrente = item.Recorrente;
+            EditVencimento = item.Vencimento ?? item.Data;
+        }
+    }
+
+    [RelayCommand]
+    public async Task ExcluirTransacaoAsync(TransacaoItemViewModel? item)
+    {
+        if (item is null)
+        {
+            return;
+        }
+
+        var confirm = await _dialogService.ShowConfirmationAsync(
+            $"Excluir {item.Tipo.ToLowerInvariant()}",
+            $"Tem certeza que deseja excluir '{item.Descricao}'?",
+            "Excluir",
+            "Cancelar");
+
+        if (!confirm)
+        {
+            return;
+        }
+
+        if (item.Tipo == "Receita")
+        {
+            await _financeService.DeleteReceitaAsync(item.Id);
+        }
+        else
+        {
+            await _financeService.DeleteDespesaAsync(item.Id);
+        }
+
+        if (_editingId == item.Id)
+        {
+            FecharEdicaoModal();
+        }
+
+        await CarregarMesAsync();
+    }
+
+    [RelayCommand]
+    public async Task SalvarEdicaoModalAsync()
+    {
+        if (!TryParseMoney(EditValor, out var valor) || valor <= 0)
+        {
+            await _dialogService.ShowAlertAsync("Atenção", "Informe um valor válido e maior que zero.", "OK");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(EditDescricao))
+        {
+            await _dialogService.ShowAlertAsync("Atenção", "Informe a descrição.", "OK");
+            return;
+        }
+
+        if (!_editingId.HasValue)
+        {
+            return;
+        }
+
+        if (_editingTipo == "Receita")
+        {
+            await _financeService.UpdateReceitaAsync(
+                _editingId.Value,
+                EditDescricao.Trim(),
+                valor,
+                EditData,
+                null);
+        }
+        else
+        {
+            await _financeService.UpdateDespesaAsync(
+                _editingId.Value,
+                EditDescricao.Trim(),
+                valor,
+                EditData,
+                null,
+                EditVencimento,
+                EditRecorrente);
+        }
+
+        FecharEdicaoModal();
+        await CarregarMesAsync();
+    }
+
+    [RelayCommand]
+    public void FecharEdicaoModal()
+    {
+        _editingId = null;
+        _editingTipo = string.Empty;
+        IsEditModalVisible = false;
+        EditModalTitle = "Editar";
+        EditDescricao = string.Empty;
+        EditValor = string.Empty;
+        EditData = DateTime.Today;
+        EditRecorrente = false;
+        EditVencimento = DateTime.Today;
+        IsEditRecorrenteVisible = false;
+        IsEditVencimentoVisible = false;
+    }
+
+    private void AtualizarTextoMes()
+    {
+        var nomeMes = MesReferencia.ToString("MMMM", PtBr);
+        // Primeira letra maiúscula
+        if (nomeMes.Length > 0)
+        {
+            nomeMes = char.ToUpper(nomeMes[0]) + nomeMes[1..];
+        }
+
+        MesAnoTexto = $"{nomeMes} de {MesReferencia.Year}";
+    }
+
+    private static bool TryParseMoney(string? value, out decimal amount)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            amount = 0m;
+            return false;
+        }
+
+        var sanitized = value.Trim()
+            .Replace("R$", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace(" ", string.Empty);
+
+        if (decimal.TryParse(sanitized, NumberStyles.Number, PtBr, out amount))
+        {
+            return true;
+        }
+
+        var normalized = sanitized.Replace(".", string.Empty).Replace(",", ".");
+        return decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out amount);
+    }
+}
+
+public class TransacaoItemViewModel
+{
+    public Guid Id { get; set; }
+    public string Tipo { get; set; } = string.Empty;
+    public string Descricao { get; set; } = string.Empty;
+    public decimal Valor { get; set; }
+    public DateTime Data { get; set; }
+    public DateTime? Vencimento { get; set; }
+    public bool HasVencimento => Vencimento.HasValue;
+    public bool Recorrente { get; set; }
+    public string ValorTexto { get; set; } = string.Empty;
+    public string ValorCor { get; set; } = "#FFFFFF";
+    public string TipoBadge { get; set; } = string.Empty;
+    public string TipoBadgeCor { get; set; } = "#374151";
+    public Receita? ReceitaOriginal { get; set; }
+    public Despesa? DespesaOriginal { get; set; }
+}

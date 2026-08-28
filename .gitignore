@@ -1,0 +1,61 @@
+# =========================================
+#   ManyControl - .gitignore
+# =========================================
+
+# Compilação e Binários (.NET / MAUI)
+[Bb]in/
+[Oo]bj/
+[Dd]ist/
+*.zip
+*.tar.gz
+*.apk
+*.aab
+*.exe
+*.msi
+*.appx
+*.msix
+
+# Visual Studio & IDEs
+.vs/
+*.user
+*.userprefs
+*.suo
+*.sln.docstates
+.idea/
+.vscode/
+*.swp
+
+# Arquivos de Pacote e Distribuição Locais
+ManyControl_Windows.zip
+ManyControl_Setup.exe
+ManyControl.apk
+
+# Bancos de Dados Locais e Arquivos de Sincronização
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+manycontrol-sync.db
+manycontrol-sync.json
+google-drive-token/
+.google-drive-token/
+
+# Credenciais e Segredos Locais
+GoogleSecrets.cs
+credentials.json
+client_secret*.json
+secrets.json
+.env
+.env.local
+
+# Logs e Temporários
+*.log
+*.tmp
+*.bak
+
+# Arquivos do Sistema Operacional
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store

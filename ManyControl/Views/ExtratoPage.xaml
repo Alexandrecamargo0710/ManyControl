@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ManyControl.ViewModels"
+             x:Class="ManyControl.Views.ExtratoPage"
+             x:DataType="vm:ExtratoViewModel"
+             Shell.NavBarIsVisible="False"
+             Title="Extrato">
+
+    <ContentPage.Resources>
+        <Style x:Key="CardBorderStyle" TargetType="Border">
+            <Setter Property="Stroke" Value="#374151" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="StrokeShape">
+                <Setter.Value>
+                    <RoundRectangle CornerRadius="18" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="20" Spacing="16">
+
+                <!-- Barra de Navegação de Mês Responsiva -->
+                <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#111827" Padding="12">
+                    <VerticalStackLayout Spacing="8">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                            <Button Grid.Column="0"
+                                    Text="◀"
+                                    WidthRequest="44" HeightRequest="44" Padding="0" CornerRadius="10"
+                                    BackgroundColor="#374151" TextColor="White" FontSize="16"
+                                    Command="{Binding MesAnteriorCommand}" />
+
+                            <Label Grid.Column="1"
+                                   Text="{Binding MesAnoTexto}"
+                                   TextColor="White"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   LineBreakMode="NoWrap" />
+
+                            <Button Grid.Column="2"
+                                    Text="▶"
+                                    WidthRequest="44" HeightRequest="44" Padding="0" CornerRadius="10"
+                                    BackgroundColor="#374151" TextColor="White" FontSize="16"
+                                    Command="{Binding ProximoMesCommand}" />
+                        </Grid>
+
+                        <Button Text="Ir para o mês atual"
+                                HeightRequest="34" Padding="14,0" FontSize="12" CornerRadius="8"
+                                BackgroundColor="#1F2937" TextColor="#9CA3AF"
+                                HorizontalOptions="Center"
+                                Command="{Binding MesAtualCommand}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Cards de Totais do Mês Responsivos -->
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#065F46" Grid.Row="0" Grid.Column="0" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Entradas" TextColor="#D1FAE5" FontSize="12" />
+                            <Label Text="{Binding TotalReceitasMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="18" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#991B1B" Grid.Row="0" Grid.Column="1" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Saídas" TextColor="#FEE2E2" FontSize="12" />
+                            <Label Text="{Binding TotalDespesasMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="18" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#1F2937" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Padding="12">
+                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                            <Label Text="Balanço do Mês" TextColor="#E5E7EB" FontSize="13" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding SaldoMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="20" FontAttributes="Bold" VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Barra Visual de Proporção Receitas vs Despesas -->
+                <Border Stroke="#374151" StrokeThickness="1" BackgroundColor="#111827" Padding="14,10">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="12" />
+                    </Border.StrokeShape>
+                    <VerticalStackLayout Spacing="6">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="Comprometimento das receitas" TextColor="#9CA3AF" FontSize="11" />
+                            <Label Grid.Column="1" Text="{Binding ProporcaoTexto}" TextColor="#E5E7EB" FontSize="11" FontAttributes="Bold" />
+                        </Grid>
+                        <ProgressBar Progress="{Binding ProporcaoDespesas}" ProgressColor="#F87171" BackgroundColor="#065F46" HeightRequest="6" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Filtros Rápidos com Botões Proporcionais -->
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                    <Button Grid.Column="0"
+                            Text="Todos"
+                            HeightRequest="38"
+                            Padding="0"
+                            FontSize="12"
+                            CornerRadius="8"
+                            Command="{Binding MudarFiltroCommand}"
+                            CommandParameter="Todos">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsFiltroTodos}" Value="True">
+                                <Setter Property="BackgroundColor" Value="#2563EB" />
+                                <Setter Property="TextColor" Value="White" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsFiltroTodos}" Value="False">
+                                <Setter Property="BackgroundColor" Value="#374151" />
+                                <Setter Property="TextColor" Value="#D1D5DB" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Grid.Column="1"
+                            Text="Receitas"
+                            HeightRequest="38"
+                            Padding="0"
+                            FontSize="12"
+                            CornerRadius="8"
+                            Command="{Binding MudarFiltroCommand}"
+                            CommandParameter="Receitas">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsFiltroReceitas}" Value="True">
+                                <Setter Property="BackgroundColor" Value="#059669" />
+                                <Setter Property="TextColor" Value="White" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsFiltroReceitas}" Value="False">
+                                <Setter Property="BackgroundColor" Value="#374151" />
+                                <Setter Property="TextColor" Value="#D1D5DB" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Grid.Column="2"
+                            Text="Despesas"
+                            HeightRequest="38"
+                            Padding="0"
+                            FontSize="12"
+                            CornerRadius="8"
+                            Command="{Binding MudarFiltroCommand}"
+                            CommandParameter="Despesas">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsFiltroDespesas}" Value="True">
+                                <Setter Property="BackgroundColor" Value="#DC2626" />
+                                <Setter Property="TextColor" Value="White" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsFiltroDespesas}" Value="False">
+                                <Setter Property="BackgroundColor" Value="#374151" />
+                                <Setter Property="TextColor" Value="#D1D5DB" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                </Grid>
+
+                <!-- Lista Completa de Transações do Mês -->
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto" Margin="4,0">
+                        <Label Text="Movimentações" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="{Binding TotalTransacoesMes, StringFormat='{0} lançamentos'}" FontSize="13" TextColor="#9CA3AF" VerticalOptions="Center" />
+                    </Grid>
+
+                    <CollectionView ItemsSource="{Binding Transacoes}">
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout Padding="30" Spacing="8" HorizontalOptions="Center">
+                                <Label Text="Nenhum lançamento encontrado neste mês."
+                                       FontSize="16"
+                                       TextColor="#9CA3AF"
+                                       HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </CollectionView.EmptyView>
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TransacaoItemViewModel">
+                                <Border Style="{StaticResource CardBorderStyle}"
+                                        Margin="0,0,0,8"
+                                        Padding="14,12"
+                                        BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}">
+                                    <VerticalStackLayout Spacing="8">
+                                        <!-- Linha 1: Badge + Descrição e Valor em destaque -->
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                            <!-- Badge de Tipo -->
+                                            <Border Grid.Column="0"
+                                                    StrokeThickness="0"
+                                                    Padding="8,3"
+                                                    BackgroundColor="{Binding TipoBadgeCor}"
+                                                    VerticalOptions="Center">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="6" />
+                                                </Border.StrokeShape>
+                                                <Label Text="{Binding TipoBadge}"
+                                                       TextColor="White"
+                                                       FontSize="11"
+                                                       FontAttributes="Bold" />
+                                            </Border>
+
+                                            <!-- Descrição -->
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding Descricao}"
+                                                   FontSize="15"
+                                                   FontAttributes="Bold"
+                                                   LineBreakMode="TailTruncation"
+                                                   VerticalOptions="Center" />
+
+                                            <!-- Valor -->
+                                            <Label Grid.Column="2"
+                                                   Text="{Binding ValorTexto}"
+                                                   TextColor="{Binding ValorCor}"
+                                                   FontSize="16"
+                                                   FontAttributes="Bold"
+                                                   VerticalOptions="Center"
+                                                   HorizontalTextAlignment="End" />
+                                        </Grid>
+
+                                        <!-- Linha 2: Datas + Botões de Ação -->
+                                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                                <Label Text="{Binding Data, StringFormat='{0:dd/MM/yyyy}'}"
+                                                       FontSize="12"
+                                                       TextColor="#9CA3AF" />
+                                                <Label Text="{Binding Vencimento, StringFormat='• Venc: {0:dd/MM/yyyy}'}"
+                                                       FontSize="12"
+                                                       TextColor="#FBBF24"
+                                                       IsVisible="{Binding HasVencimento}" />
+                                            </HorizontalStackLayout>
+
+                                            <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                                <Button Text="Editar"
+                                                        HeightRequest="30"
+                                                        Padding="12,0"
+                                                        FontSize="11"
+                                                        CornerRadius="6"
+                                                        BackgroundColor="#2563EB"
+                                                        TextColor="White"
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExtratoViewModel}}, Path=EditarTransacaoCommand}"
+                                                        CommandParameter="{Binding .}" />
+                                                <Button Text="Excluir"
+                                                        HeightRequest="30"
+                                                        Padding="12,0"
+                                                        FontSize="11"
+                                                        CornerRadius="6"
+                                                        BackgroundColor="#DC2626"
+                                                        TextColor="White"
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExtratoViewModel}}, Path=ExcluirTransacaoCommand}"
+                                                        CommandParameter="{Binding .}" />
+                                            </HorizontalStackLayout>
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Modal de Edição -->
+        <Grid IsVisible="{Binding IsEditModalVisible}" BackgroundColor="#AA000000" Padding="24" ZIndex="10">
+            <Border Style="{StaticResource CardBorderStyle}"
+                    BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#111827}"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    MaximumWidthRequest="420">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="{Binding EditModalTitle}" FontSize="22" FontAttributes="Bold" />
+
+                    <Entry Text="{Binding EditDescricao}" Placeholder="Descrição" />
+                    <Entry Text="{Binding EditValor}" Placeholder="Valor" Keyboard="Numeric" />
+                    <DatePicker Date="{Binding EditData}" />
+
+                    <VerticalStackLayout IsVisible="{Binding IsEditRecorrenteVisible}" Spacing="4">
+                        <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Switch IsToggled="{Binding EditRecorrente}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Despesa recorrente" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
+                        </Grid>
+                        <Label Text="Ative caso essa despesa se repete todo mês" FontSize="12" TextColor="#6B7280" />
+                    </VerticalStackLayout>
+                    <DatePicker IsVisible="{Binding IsEditVencimentoVisible}" Date="{Binding EditVencimento}" />
+
+                    <HorizontalStackLayout Spacing="12">
+                        <Button Text="Atualizar" Command="{Binding SalvarEdicaoModalCommand}" />
+                        <Button Text="Cancelar" Command="{Binding FecharEdicaoModalCommand}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </Grid>
+
+</ContentPage>
