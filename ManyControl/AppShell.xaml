@@ -5,7 +5,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:ManyControl"
     xmlns:views="clr-namespace:ManyControl.Views"
-    Title="ManyControl">
+    Title="ManyControl"
+    BackgroundColor="#0b0f19"
+    Shell.BackgroundColor="#0f172a"
+    Shell.ForegroundColor="#38bdf8"
+    Shell.TitleColor="White"
+    Shell.TabBarBackgroundColor="#0b0f19"
+    Shell.TabBarForegroundColor="#38bdf8"
+    Shell.TabBarTitleColor="#38bdf8"
+    Shell.TabBarUnselectedColor="#94a3b8">
 
     <TabBar>
         <Tab Title="Início" Icon="tab_home.png">

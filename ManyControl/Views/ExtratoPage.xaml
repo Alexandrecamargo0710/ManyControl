@@ -5,6 +5,7 @@
              x:Class="ManyControl.Views.ExtratoPage"
              x:DataType="vm:ExtratoViewModel"
              Shell.NavBarIsVisible="False"
+             BackgroundColor="#0b0f19"
              Title="Extrato">
 
     <ContentPage.Resources>
