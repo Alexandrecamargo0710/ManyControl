@@ -6,6 +6,7 @@
              x:Class="ManyControl.MainPage"
              x:DataType="vm:MainViewModel"
              Shell.NavBarIsVisible="False"
+             BackgroundColor="#0b0f19"
              Title="Início">
 
     <ContentPage.Resources>
