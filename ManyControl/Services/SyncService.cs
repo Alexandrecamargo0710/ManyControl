@@ -89,51 +89,24 @@ public class SyncService
             return await ExportAsync("Primeira sincronização criada com sucesso.");
         }
 
-        var localPackage = await _financeService.CreateSyncPackageAsync();
         var remotePackage = await ReadPackageFromFileAsync(_syncFilePath);
         if (remotePackage is null)
         {
             return new SyncResult(false, "O arquivo de sincronização existe, mas não foi possível ler os dados dele.");
         }
 
-        var localVersion = NormalizeVersion(localPackage.LastChangedAtUtc, localPackage.ExportedAtUtc);
-        var remoteVersion = NormalizeVersion(remotePackage.LastChangedAtUtc, remotePackage.ExportedAtUtc);
-        var lastSyncedVersion = GetLastSyncedDataVersionUtc();
+        await BackupCurrentLocalDataAsync("antes-sincronizacao-local");
 
-        if (VersionsAreEqual(localVersion, remoteVersion))
-        {
-            SaveSyncPreferences("none", localVersion);
-            return new SyncResult(true, "Tudo sincronizado. Nenhuma alteração nova encontrada.");
-        }
+        await _financeService.ApplySyncPackageAsync(remotePackage);
+        await _financeService.DeduplicateCategoriasAsync();
 
-        var localChangedAfterLastSync = localVersion > lastSyncedVersion;
-        var remoteChangedAfterLastSync = remoteVersion > lastSyncedVersion;
+        var unifiedPackage = await _financeService.CreateSyncPackageAsync();
+        var unifiedVersion = NormalizeVersion(unifiedPackage.LastChangedAtUtc, unifiedPackage.ExportedAtUtc);
+        var unifiedJson = SerializePackage(unifiedPackage);
 
-        if (localChangedAfterLastSync && remoteChangedAfterLastSync && lastSyncedVersion != DateTime.MinValue)
-        {
-            await BackupCurrentLocalDataAsync("antes-mesclagem-local");
-            await _financeService.ApplySyncPackageAsync(remotePackage);
-
-            var mergedPackage = await _financeService.CreateSyncPackageAsync();
-            var mergedVersion = NormalizeVersion(mergedPackage.LastChangedAtUtc, mergedPackage.ExportedAtUtc);
-            await WritePackageToFileAsync(mergedPackage, _syncFilePath);
-
-            SaveSyncPreferences("merge", mergedVersion);
-            return new SyncResult(true, "Dados locais e do arquivo mesclados com sucesso!");
-        }
-
-        if (remoteVersion > localVersion)
-        {
-            await BackupCurrentLocalDataAsync("antes-importacao");
-            await _financeService.ApplySyncPackageAsync(remotePackage);
-            SaveSyncPreferences("import", remoteVersion);
-            return new SyncResult(true, "Dados atualizados a partir do arquivo de sincronização.");
-        }
-
-        await BackupExistingSyncFileAsync("antes-exportacao");
-        await WritePackageToFileAsync(localPackage, _syncFilePath);
-        SaveSyncPreferences("export", localVersion);
-        return new SyncResult(true, "Alterações locais enviadas para o arquivo de sincronização.");
+        await File.WriteAllTextAsync(_syncFilePath, unifiedJson);
+        SaveSyncPreferences("sync", unifiedVersion);
+        return new SyncResult(true, "Dados sincronizados com o arquivo local!");
     }
 
     public async Task<SyncResult> SyncWithGoogleDriveAsync()
@@ -148,7 +121,6 @@ public class SyncService
             Directory.CreateDirectory(_syncFolder);
 
             var localPackage = await _financeService.CreateSyncPackageAsync();
-            var localVersion = NormalizeVersion(localPackage.LastChangedAtUtc, localPackage.ExportedAtUtc);
             var remoteFile = await _googleDriveService.DownloadSyncFileAsync();
 
             if (remoteFile is null)
@@ -156,7 +128,8 @@ public class SyncService
                 var firstJson = SerializePackage(localPackage);
                 await _googleDriveService.UploadSyncFileAsync(firstJson);
                 await File.WriteAllTextAsync(_syncFilePath, firstJson);
-                SaveSyncPreferences("export", localVersion);
+                var version = NormalizeVersion(localPackage.LastChangedAtUtc, localPackage.ExportedAtUtc);
+                SaveSyncPreferences("export", version);
                 return new SyncResult(true, "Primeira sincronização criada no Google Drive.");
             }
 
@@ -166,59 +139,41 @@ public class SyncService
                 return new SyncResult(false, "O arquivo do Google Drive existe, mas não foi possível ler os dados dele.");
             }
 
+            await BackupCurrentLocalDataAsync("antes-sincronizacao-drive");
+
+            // 1. Aplica registros da nuvem na base local (adiciona o que o outro aparelho criou)
+            var changesAppliedLocally = await _financeService.ApplySyncPackageAsync(remotePackage);
+
+            // 2. Remove duplicatas de categorias se houver
+            await _financeService.DeduplicateCategoriasAsync();
+
+            // 3. Cria o pacote consolidado contendo os dados de AMBOS os aparelhos
+            var unifiedPackage = await _financeService.CreateSyncPackageAsync();
+            var unifiedVersion = NormalizeVersion(unifiedPackage.LastChangedAtUtc, unifiedPackage.ExportedAtUtc);
+            var unifiedJson = SerializePackage(unifiedPackage);
+
+            // 4. Salva localmente
+            await File.WriteAllTextAsync(_syncFilePath, unifiedJson);
+
+            // 5. Verifica se a base unificada tem dados que precisam subir para o Google Drive
+            // (ou seja, se este dispositivo tinha lançamentos que a nuvem ainda não conhecia)
             var remoteVersion = NormalizeVersion(remotePackage.LastChangedAtUtc, remotePackage.ExportedAtUtc);
-            var lastSyncedVersion = GetLastSyncedDataVersionUtc();
+            bool driveNeedsUpdate = remotePackage.Receitas.Count != unifiedPackage.Receitas.Count ||
+                                    remotePackage.Despesas.Count != unifiedPackage.Despesas.Count ||
+                                    remotePackage.Categorias.Count != unifiedPackage.Categorias.Count ||
+                                    !VersionsAreEqual(remoteVersion, unifiedVersion);
 
-            if (VersionsAreEqual(localVersion, remoteVersion))
+            if (driveNeedsUpdate)
             {
-                await File.WriteAllTextAsync(_syncFilePath, remoteFile.Json);
-                await _googleDriveService.UploadSyncFileAsync(remoteFile.Json);
-                SaveSyncPreferences("none", localVersion);
-                return new SyncResult(true, "Tudo sincronizado com o Google Drive. Nenhuma alteração nova encontrada.");
+                await _googleDriveService.UploadSyncFileAsync(unifiedJson);
+                SaveSyncPreferences("merge", unifiedVersion);
+                return new SyncResult(true, "Dados do computador e do celular sincronizados com sucesso!");
             }
 
-            var localChangedAfterLastSync = localVersion > lastSyncedVersion;
-            var remoteChangedAfterLastSync = remoteVersion > lastSyncedVersion;
-
-            // Se ambos os dispositivos tiveram alterações desde a última sincronização,
-            // realizamos uma mesclagem automática segura: unimos os lançamentos por ID (Guid)
-            // sem apagar nenhum dado de nenhum lado!
-            if (localChangedAfterLastSync && remoteChangedAfterLastSync && lastSyncedVersion != DateTime.MinValue)
-            {
-                await BackupCurrentLocalDataAsync("antes-mesclagem-drive");
-
-                // 1. Aplica dados remotos (do celular) na base local (computador), unindo registros
-                await _financeService.ApplySyncPackageAsync(remotePackage);
-
-                // 2. Cria o pacote unificado com os dados consolidados de ambos os aparelhos
-                var mergedPackage = await _financeService.CreateSyncPackageAsync();
-                var mergedVersion = NormalizeVersion(mergedPackage.LastChangedAtUtc, mergedPackage.ExportedAtUtc);
-                var mergedJson = SerializePackage(mergedPackage);
-
-                // 3. Atualiza o Google Drive e o arquivo local com a versão consolidada
-                await _googleDriveService.UploadSyncFileAsync(mergedJson);
-                await File.WriteAllTextAsync(_syncFilePath, mergedJson);
-
-                SaveSyncPreferences("merge", mergedVersion);
-                return new SyncResult(true, "Dados do computador e do celular mesclados com sucesso!");
-            }
-
-            if (remoteVersion > localVersion)
-            {
-                await BackupCurrentLocalDataAsync("antes-importacao-drive");
-                await _financeService.ApplySyncPackageAsync(remotePackage);
-                await File.WriteAllTextAsync(_syncFilePath, remoteFile.Json);
-                SaveSyncPreferences("import", remoteVersion);
-                return new SyncResult(true, "Dados atualizados a partir do Google Drive.");
-            }
-
-            await BackupExistingSyncFileAsync("antes-exportacao-drive");
-
-            var json = SerializePackage(localPackage);
-            await _googleDriveService.UploadSyncFileAsync(json);
-            await File.WriteAllTextAsync(_syncFilePath, json);
-            SaveSyncPreferences("export", localVersion);
-            return new SyncResult(true, "Alterações locais enviadas para o Google Drive.");
+            SaveSyncPreferences(changesAppliedLocally ? "import" : "none", unifiedVersion);
+            return new SyncResult(true, changesAppliedLocally
+                ? "Dados atualizados a partir do Google Drive com sucesso."
+                : "Tudo sincronizado com o Google Drive. Nenhuma alteração nova.");
         }
         catch (Exception ex)
         {

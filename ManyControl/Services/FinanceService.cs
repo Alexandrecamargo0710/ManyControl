@@ -400,14 +400,22 @@ public class FinanceService
         };
     }
 
-    public async Task ApplySyncPackageAsync(SyncPackage package)
+    public async Task<bool> ApplySyncPackageAsync(SyncPackage package)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
+        bool hasChanges = false;
 
         foreach (var categoria in package.Categorias)
         {
             if (categoria.DeletedAt != null)
             {
+                var existingDeleted = await context.Categorias.FirstOrDefaultAsync(x => x.Id == categoria.Id);
+                if (existingDeleted != null && categoria.UpdatedAt > existingDeleted.UpdatedAt)
+                {
+                    existingDeleted.DeletedAt = categoria.DeletedAt;
+                    existingDeleted.UpdatedAt = categoria.UpdatedAt;
+                    hasChanges = true;
+                }
                 continue;
             }
 
@@ -418,6 +426,7 @@ public class FinanceService
             if (existing is null)
             {
                 context.Categorias.Add(categoria);
+                hasChanges = true;
                 continue;
             }
 
@@ -438,8 +447,11 @@ public class FinanceService
                 existing.Nome = categoria.Nome;
                 existing.Tipo = categoria.Tipo;
                 existing.UpdatedAt = categoria.UpdatedAt;
+                hasChanges = true;
             }
         }
+
+        await context.SaveChangesAsync();
 
         foreach (var receita in package.Receitas)
         {
@@ -447,12 +459,14 @@ public class FinanceService
             if (existing is null)
             {
                 context.Receitas.Add(receita);
+                hasChanges = true;
                 continue;
             }
 
             if (receita.UpdatedAt > existing.UpdatedAt)
             {
                 context.Entry(existing).CurrentValues.SetValues(receita);
+                hasChanges = true;
             }
         }
 
@@ -462,15 +476,60 @@ public class FinanceService
             if (existing is null)
             {
                 context.Despesas.Add(despesa);
+                hasChanges = true;
                 continue;
             }
 
             if (despesa.UpdatedAt > existing.UpdatedAt)
             {
                 context.Entry(existing).CurrentValues.SetValues(despesa);
+                hasChanges = true;
             }
         }
 
         await context.SaveChangesAsync();
+        return hasChanges;
+    }
+
+    public async Task DeduplicateCategoriasAsync()
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var activeCategorias = await context.Categorias
+            .Where(c => c.DeletedAt == null)
+            .ToListAsync();
+
+        var groups = activeCategorias
+            .GroupBy(c => (c.Nome.Trim().ToLowerInvariant(), c.Tipo.Trim().ToLowerInvariant()))
+            .Where(g => g.Count() > 1);
+
+        bool changes = false;
+        foreach (var group in groups)
+        {
+            var keep = group.OrderBy(c => c.CreatedAt).First();
+            var duplicates = group.Skip(1).ToList();
+
+            foreach (var duplicate in duplicates)
+            {
+                var despesas = await context.Despesas.Where(d => d.CategoriaId == duplicate.Id).ToListAsync();
+                foreach (var d in despesas)
+                {
+                    d.CategoriaId = keep.Id;
+                }
+
+                var receitas = await context.Receitas.Where(r => r.CategoriaId == duplicate.Id).ToListAsync();
+                foreach (var r in receitas)
+                {
+                    r.CategoriaId = keep.Id;
+                }
+
+                context.Categorias.Remove(duplicate);
+                changes = true;
+            }
+        }
+
+        if (changes)
+        {
+            await context.SaveChangesAsync();
+        }
     }
 }
