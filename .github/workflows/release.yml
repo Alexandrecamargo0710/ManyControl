@@ -46,21 +46,28 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
-          $clientId = $env:GOOGLE_CLIENT_ID
-          $clientSecret = $env:GOOGLE_CLIENT_SECRET
+          $rawId = "$env:GOOGLE_CLIENT_ID"
+          $rawSecret = "$env:GOOGLE_CLIENT_SECRET"
+          
+          if ($rawId -match '"client_id"\s*:\s*"([^"]+)"') { $rawId = $Matches[1] }
+          if ($rawSecret -match '"client_secret"\s*:\s*"([^"]+)"') { $rawSecret = $Matches[1] }
+          
+          $clientId = ($rawId -replace '[\r\n"]', '').Trim()
+          $clientSecret = ($rawSecret -replace '[\r\n"]', '').Trim()
+          
           if ($clientId -and $clientSecret) {
             $code = "namespace ManyControl;`r`n`r`npublic static partial class GoogleSecrets`r`n{`r`n    public const string DefaultClientId = `"$clientId`";`r`n    public const string DefaultClientSecret = `"$clientSecret`";`r`n}`r`n"
             Set-Content -Path "ManyControl/GoogleSecrets.cs" -Value $code -Encoding UTF8
-            Write-Host "GoogleSecrets.cs configurado com os segredos do repositório."
+            Write-Host "GoogleSecrets.cs configurado com sucesso."
 
-            $prefix = $clientId.Replace(".apps.googleusercontent.com", "").Trim()
+            $prefix = ($clientId -replace '\.apps\.googleusercontent\.com', '').Trim()
             if ($prefix) {
               $callbackFile = "ManyControl/Platforms/Android/WebAuthenticationCallbackActivity.cs"
               if (Test-Path $callbackFile) {
                 $content = Get-Content $callbackFile -Raw
                 $content = [System.Text.RegularExpressions.Regex]::Replace($content, 'com\.googleusercontent\.apps\.[^"]+', "com.googleusercontent.apps.$prefix")
                 Set-Content -Path $callbackFile -Value $content -Encoding UTF8
-                Write-Host "Android Callback atualizado com o esquema: com.googleusercontent.apps.$prefix"
+                Write-Host "Android Callback configurado: com.googleusercontent.apps.$prefix"
               }
             }
           } else {
