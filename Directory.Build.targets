@@ -1,0 +1,3 @@
+<Project>
+  <Target Name="_CheckForMissingWorkload" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;_CheckForUnsupportedTargetPlatformIdentifier;_GenerateRestoreProjectPathWalk" />
+</Project>

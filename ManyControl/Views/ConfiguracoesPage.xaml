@@ -156,6 +156,45 @@
                 </VerticalStackLayout>
             </Border>
 
+            <!-- Card 4: Atualizações do Aplicativo -->
+            <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#111827">
+                <VerticalStackLayout Spacing="14">
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Atualizações do ManyControl" TextColor="White" FontSize="18" FontAttributes="Bold" />
+                            <Label Text="Verifique e instale as versões mais recentes com melhorias e correções diretamente pelo app."
+                                   FontSize="13"
+                                   TextColor="#9CA3AF" />
+                        </VerticalStackLayout>
+                        <Border Grid.Column="1" StrokeThickness="0" BackgroundColor="#1E293B" Padding="12,6" VerticalOptions="Start">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+                            <Label Text="{Binding AppVersionText}" TextColor="#38BDF8" FontSize="12" FontAttributes="Bold" />
+                        </Border>
+                    </Grid>
+
+                    <!-- Status Text -->
+                    <Label Text="{Binding UpdateStatusText}" TextColor="#CBD5E1" FontSize="13" />
+
+                    <!-- Barra de Progresso de Download -->
+                    <VerticalStackLayout Spacing="6" IsVisible="{Binding IsDownloadingUpdate}">
+                        <ProgressBar Progress="{Binding UpdateProgress}" ProgressColor="#38BDF8" />
+                        <Label Text="{Binding UpdateProgressText}" TextColor="#93C5FD" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+
+                    <!-- Botão de Verificação -->
+                    <Button Text="Verificar Atualizações"
+                            HeightRequest="46"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            BackgroundColor="#0284C7"
+                            TextColor="White"
+                            HorizontalOptions="Start"
+                            Command="{Binding VerificarAtualizacoesCommand}" />
+                </VerticalStackLayout>
+            </Border>
+
         </VerticalStackLayout>
     </ScrollView>
 

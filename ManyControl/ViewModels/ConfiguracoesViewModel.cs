@@ -7,6 +7,7 @@ namespace ManyControl.ViewModels;
 public partial class ConfiguracoesViewModel : ObservableObject
 {
     private readonly SyncService _syncService;
+    private readonly UpdateService _updateService;
     private readonly IDialogService _dialogService;
 
     [ObservableProperty]
@@ -33,9 +34,28 @@ public partial class ConfiguracoesViewModel : ObservableObject
     [ObservableProperty]
     public partial string LocalSyncPath { get; set; } = string.Empty;
 
-    public ConfiguracoesViewModel(SyncService syncService, IDialogService dialogService)
+    [ObservableProperty]
+    public partial string AppVersionText { get; set; } = $"v{AppInfo.Current.VersionString}";
+
+    [ObservableProperty]
+    public partial string UpdateStatusText { get; set; } = "Clique para verificar novas versões";
+
+    [ObservableProperty]
+    public partial bool IsCheckingUpdate { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsDownloadingUpdate { get; set; }
+
+    [ObservableProperty]
+    public partial double UpdateProgress { get; set; }
+
+    [ObservableProperty]
+    public partial string UpdateProgressText { get; set; } = string.Empty;
+
+    public ConfiguracoesViewModel(SyncService syncService, UpdateService updateService, IDialogService dialogService)
     {
         _syncService = syncService;
+        _updateService = updateService;
         _dialogService = dialogService;
     }
 
@@ -173,6 +193,104 @@ public partial class ConfiguracoesViewModel : ObservableObject
         catch (Exception ex)
         {
             await _dialogService.ShowAlertAsync("Erro", ex.Message, "OK");
+        }
+    }
+
+    [RelayCommand]
+    public async Task VerificarAtualizacoesAsync()
+    {
+        if (IsCheckingUpdate || IsDownloadingUpdate)
+        {
+            return;
+        }
+
+        IsCheckingUpdate = true;
+        UpdateStatusText = "Buscando atualizações no GitHub...";
+
+        try
+        {
+            var update = await _updateService.CheckForUpdatesAsync();
+
+            if (update is null)
+            {
+                UpdateStatusText = "Não foi possível conectar ao servidor de atualizações.";
+                await _dialogService.ShowAlertAsync("Aviso", "Não foi possível verificar atualizações no momento. Verifique sua conexão.", "OK");
+                return;
+            }
+
+            if (!update.IsNewer)
+            {
+                UpdateStatusText = $"O ManyControl já está na versão mais recente ({AppVersionText})!";
+                await _dialogService.ShowAlertAsync("Atualizado", $"Você já está utilizando a versão mais recente ({AppVersionText}).", "OK");
+                return;
+            }
+
+            UpdateStatusText = $"Nova versão {update.TagName} disponível!";
+
+            var confirm = await _dialogService.ShowConfirmationAsync(
+                $"Nova Versão ({update.TagName}) 🎉",
+                $"Uma nova versão do ManyControl está pronta para instalação!\n\n" +
+                $"{(string.IsNullOrWhiteSpace(update.ReleaseNotes) ? string.Empty : $"Novidades:\n{update.ReleaseNotes}\n\n")}" +
+                $"Deseja baixar e atualizar agora?",
+                "Atualizar Agora",
+                "Depois");
+
+            if (!confirm)
+            {
+                return;
+            }
+
+            await BaixarEInstalarAtualizacaoAsync(update);
+        }
+        catch (Exception ex)
+        {
+            UpdateStatusText = $"Erro ao verificar: {ex.Message}";
+            await _dialogService.ShowAlertAsync("Erro", $"Falha ao verificar atualizações: {ex.Message}", "OK");
+        }
+        finally
+        {
+            IsCheckingUpdate = false;
+        }
+    }
+
+    public async Task BaixarEInstalarAtualizacaoAsync(UpdateInfo update)
+    {
+        if (string.IsNullOrWhiteSpace(update.DownloadUrl))
+        {
+            await _dialogService.ShowAlertAsync("Aviso", "O pacote de instalação para esta plataforma ainda não está disponível nesta versão.", "OK");
+            return;
+        }
+
+        IsDownloadingUpdate = true;
+        UpdateProgress = 0;
+        UpdateProgressText = "Iniciando download...";
+
+        var progress = new Progress<double>(p =>
+        {
+            UpdateProgress = p;
+            UpdateProgressText = $"Baixando atualização... {p * 100:F0}%";
+        });
+
+        try
+        {
+            var downloadedFile = await _updateService.DownloadUpdateAsync(update, progress);
+
+            if (string.IsNullOrWhiteSpace(downloadedFile) || !File.Exists(downloadedFile))
+            {
+                throw new InvalidOperationException("Falha ao salvar o arquivo de atualização.");
+            }
+
+            UpdateProgressText = "Download concluído! Iniciando atualização...";
+            _updateService.InstallUpdate(downloadedFile);
+        }
+        catch (Exception ex)
+        {
+            UpdateProgressText = string.Empty;
+            await _dialogService.ShowAlertAsync("Falha na Atualização", $"Não foi possível concluir a atualização: {ex.Message}", "OK");
+        }
+        finally
+        {
+            IsDownloadingUpdate = false;
         }
     }
 }
