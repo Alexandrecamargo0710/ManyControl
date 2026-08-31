@@ -174,7 +174,37 @@ public class UpdateService
         Environment.Exit(0);
 #elif ANDROID
         var context = Android.App.Application.Context;
+        var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
         var javaFile = new Java.IO.File(downloadedFilePath);
+
+        if (!javaFile.Exists())
+        {
+            throw new FileNotFoundException("Arquivo APK não encontrado para instalação.", downloadedFilePath);
+        }
+
+        javaFile.SetReadable(true, false);
+
+        // Se Android 8.0+ (API 26+), verifica se tem permissão para instalar fontes desconhecidas
+        if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.O)
+        {
+            if (context.PackageManager != null && !context.PackageManager.CanRequestPackageInstalls())
+            {
+                var permissionIntent = new Android.Content.Intent(
+                    Android.Provider.Settings.ActionManageUnknownAppSources,
+                    Android.Net.Uri.Parse($"package:{context.PackageName}"));
+                permissionIntent.AddFlags(Android.Content.ActivityFlags.NewTask);
+
+                if (activity != null)
+                {
+                    activity.StartActivity(permissionIntent);
+                }
+                else
+                {
+                    context.StartActivity(permissionIntent);
+                }
+                return;
+            }
+        }
 
         var apkUri = AndroidX.Core.Content.FileProvider.GetUriForFile(
             context,
@@ -184,10 +214,32 @@ public class UpdateService
         var intent = new Android.Content.Intent(Android.Content.Intent.ActionView);
         intent.SetDataAndType(apkUri, "application/vnd.android.package-archive");
         intent.AddFlags(Android.Content.ActivityFlags.GrantReadUriPermission);
+        intent.AddFlags(Android.Content.ActivityFlags.GrantPrefixUriPermission);
         intent.AddFlags(Android.Content.ActivityFlags.NewTask);
         intent.AddFlags(Android.Content.ActivityFlags.ClearTop);
 
-        context.StartActivity(intent);
+        // Concede permissão explícita de leitura para o PackageInstaller do sistema
+        var resolveInfoList = context.PackageManager?.QueryIntentActivities(intent, Android.Content.PM.PackageInfoFlags.MatchDefaultOnly);
+        if (resolveInfoList != null)
+        {
+            foreach (var resolveInfo in resolveInfoList)
+            {
+                var packageName = resolveInfo.ActivityInfo?.PackageName;
+                if (!string.IsNullOrEmpty(packageName))
+                {
+                    context.GrantUriPermission(packageName, apkUri, Android.Content.ActivityFlags.GrantReadUriPermission);
+                }
+            }
+        }
+
+        if (activity != null)
+        {
+            activity.StartActivity(intent);
+        }
+        else
+        {
+            context.StartActivity(intent);
+        }
 #else
         throw new PlatformNotSupportedException("Instalação automática não suportada nesta plataforma.");
 #endif

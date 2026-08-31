@@ -702,15 +702,19 @@ public partial class MainViewModel : ObservableObject
             var downloadedFile = await _updateService.DownloadUpdateAsync(update, progress);
             if (!string.IsNullOrWhiteSpace(downloadedFile) && File.Exists(downloadedFile))
             {
-                UpdateProgressText = "Download concluído! Reiniciando aplicativo...";
-                await Task.Delay(400);
+                UpdateProgressText = "Download concluído! Abrindo instalador...";
+                await Task.Delay(500);
                 _updateService.InstallUpdate(downloadedFile);
             }
         }
         catch (Exception ex)
         {
-            IsDownloadingUpdate = false;
             await _dialogService.ShowAlertAsync("Falha na Atualização", $"Não foi possível atualizar automaticamente: {ex.Message}", "OK");
+        }
+        finally
+        {
+            IsDownloadingUpdate = false;
+            UpdateProgressText = string.Empty;
         }
     }
 
