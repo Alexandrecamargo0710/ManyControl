@@ -1,0 +1,91 @@
+name: Build & Release ManyControl
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Compilar e Publicar Versão
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Instalar Workloads do .NET MAUI
+        run: |
+          dotnet workload install maui-android maui-windows
+
+      - name: Configurar Java JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar Inno Setup (para Windows Installer)
+        run: |
+          choco install innosetup --no-progress
+
+      - name: Preparar GoogleSecrets
+        shell: pwsh
+        run: |
+          if (!(Test-Path "ManyControl/GoogleSecrets.cs")) {
+            Copy-Item "ManyControl/GoogleSecrets.example.cs" -Destination "ManyControl/GoogleSecrets.cs"
+          }
+          New-Item -ItemType Directory -Path "dist" -Force | Out-Null
+
+      # 1. Compilação Windows
+      - name: Compilar Versão Windows
+        run: |
+          dotnet publish ManyControl/ManyControl.csproj -f net10.0-windows10.0.19041.0 -c Release -p:WindowsPackageType=None
+
+      - name: Gerar Instalador ManyControl_Setup.exe
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      # 2. Compilação Android
+      - name: Compilar Versão Android (APK)
+        run: |
+          dotnet publish ManyControl/ManyControl.csproj -f net10.0-android -c Release -p:AndroidKeyStore=false
+
+      - name: Organizar Artefato do Android
+        shell: pwsh
+        run: |
+          $apk = Get-ChildItem -Path "ManyControl/bin/Release/net10.0-android/publish" -Filter "*Signed.apk" -Recurse | Select-Object -First 1
+          if (!$apk) {
+            $apk = Get-ChildItem -Path "ManyControl/bin/Release/net10.0-android" -Filter "*.apk" -Recurse | Select-Object -First 1
+          }
+          if ($apk) {
+            Copy-Item -Path $apk.FullName -Destination "dist/ManyControl.apk" -Force
+            Write-Host "APK copiado para dist/ManyControl.apk"
+          } else {
+            Write-Error "Nenhum arquivo APK foi encontrado após o build."
+          }
+
+      # 3. Publicar Release no GitHub
+      - name: Criar GitHub Release e Anexar Pacotes
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/ManyControl_Setup.exe
+            dist/ManyControl.apk
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

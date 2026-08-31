@@ -13,7 +13,9 @@ public partial class MainViewModel : ObservableObject
 
     private readonly FinanceService _financeService;
     private readonly SyncService _syncService;
+    private readonly UpdateService _updateService;
     private readonly IDialogService _dialogService;
+    private static bool _hasCheckedUpdateOnStartup = false;
 
     // Métricas do Dashboard
     [ObservableProperty]
@@ -103,10 +105,11 @@ public partial class MainViewModel : ObservableObject
     private Guid? _editingDespesaId;
     private EditMode _currentEditMode = EditMode.None;
 
-    public MainViewModel(FinanceService financeService, SyncService syncService, IDialogService dialogService)
+    public MainViewModel(FinanceService financeService, SyncService syncService, UpdateService updateService, IDialogService dialogService)
     {
         _financeService = financeService;
         _syncService = syncService;
+        _updateService = updateService;
         _dialogService = dialogService;
     }
 
@@ -139,6 +142,12 @@ public partial class MainViewModel : ObservableObject
         LastSyncText = _syncService.GetLastSyncText();
         LastSyncModeText = _syncService.GetLastSyncModeText();
         SyncStatusText = "Tudo sincronizado";
+
+        if (!_hasCheckedUpdateOnStartup)
+        {
+            _hasCheckedUpdateOnStartup = true;
+            _ = Task.Run(VerificarAtualizacaoInicialAsync);
+        }
     }
 
     [RelayCommand]
@@ -449,6 +458,54 @@ public partial class MainViewModel : ObservableObject
 
         var normalized = sanitized.Replace(".", string.Empty).Replace(",", ".");
         return decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out amount);
+    }
+
+    private async Task VerificarAtualizacaoInicialAsync()
+    {
+        try
+        {
+            await Task.Delay(2500);
+            var update = await _updateService.CheckForUpdatesAsync();
+
+            if (update != null && update.IsNewer && !string.IsNullOrWhiteSpace(update.DownloadUrl))
+            {
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    var confirm = await _dialogService.ShowConfirmationAsync(
+                        $"Nova Versão ({update.TagName}) 🎉",
+                        $"Uma nova versão do ManyControl está disponível!\n\n" +
+                        $"{(string.IsNullOrWhiteSpace(update.ReleaseNotes) ? string.Empty : $"Novidades:\n{update.ReleaseNotes}\n\n")}" +
+                        $"Deseja baixar e atualizar agora?",
+                        "Atualizar Agora",
+                        "Depois");
+
+                    if (confirm)
+                    {
+                        await BaixarEInstalarAtualizacaoAsync(update);
+                    }
+                });
+            }
+        }
+        catch
+        {
+            // Silencioso na inicialização para evitar interrupções offline
+        }
+    }
+
+    private async Task BaixarEInstalarAtualizacaoAsync(UpdateInfo update)
+    {
+        try
+        {
+            var downloadedFile = await _updateService.DownloadUpdateAsync(update);
+            if (!string.IsNullOrWhiteSpace(downloadedFile) && File.Exists(downloadedFile))
+            {
+                _updateService.InstallUpdate(downloadedFile);
+            }
+        }
+        catch (Exception ex)
+        {
+            await _dialogService.ShowAlertAsync("Falha na Atualização", $"Não foi possível atualizar automaticamente: {ex.Message}", "OK");
+        }
     }
 
     private enum EditMode

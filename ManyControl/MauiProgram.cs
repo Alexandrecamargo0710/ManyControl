@@ -33,6 +33,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<FinanceService>();
         builder.Services.AddSingleton<GoogleDriveService>();
         builder.Services.AddSingleton<SyncService>();
+        builder.Services.AddSingleton<UpdateService>();
 
         builder.Services.AddSingleton<AppShell>();
         builder.Services.AddTransient<MainViewModel>();
