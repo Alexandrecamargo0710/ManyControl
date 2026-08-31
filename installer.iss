@@ -1,6 +1,6 @@
 ; Script de instalador Inno Setup para ManyControl
 #define MyAppName "ManyControl"
-#define MyAppVersion "1.0.3"
+#define MyAppVersion "1.0.4"
 #define MyAppPublisher "ManyControl"
 #define MyAppExeName "ManyControl.exe"
 #define MySourceDir "ManyControl\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish"

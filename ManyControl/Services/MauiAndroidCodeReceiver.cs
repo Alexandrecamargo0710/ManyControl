@@ -20,7 +20,7 @@ public class MauiAndroidCodeReceiver : ICodeReceiver
         AuthorizationCodeRequestUrl url,
         CancellationToken taskCancellationToken)
     {
-        var authUrl = url.Build();
+        var authUrl = ForceAccountSelection(url.Build());
         var callbackUri = new Uri(_redirectUri);
 
         WebAuthenticatorResult? authResult = null;
@@ -47,5 +47,20 @@ public class MauiAndroidCodeReceiver : ICodeReceiver
         }
 
         return new AuthorizationCodeResponseUrl(dict);
+    }
+
+    private static Uri ForceAccountSelection(Uri originalUri)
+    {
+        var urlStr = originalUri.ToString();
+        if (urlStr.Contains("prompt="))
+        {
+            urlStr = System.Text.RegularExpressions.Regex.Replace(urlStr, @"prompt=[^&]+", "prompt=select_account");
+        }
+        else
+        {
+            var separator = urlStr.Contains('?') ? "&" : "?";
+            urlStr = $"{urlStr}{separator}prompt=select_account";
+        }
+        return new Uri(urlStr);
     }
 }

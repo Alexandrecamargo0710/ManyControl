@@ -37,10 +37,11 @@ public class WindowsOAuthReceiver : ICodeReceiver
             throw new InvalidOperationException($"Não foi possível iniciar o receptor de autenticação na porta {port}: {ex.Message}", ex);
         }
 
-        var authUrl = url.Build().ToString();
+        var authUri = ForceAccountSelection(url.Build());
+        var authUrl = authUri.ToString();
         try
         {
-            await Launcher.OpenAsync(new Uri(authUrl));
+            await Launcher.OpenAsync(authUri);
         }
         catch
         {
@@ -242,4 +243,19 @@ public class WindowsOAuthReceiver : ICodeReceiver
 </body>
 </html>
 """;
+
+    private static Uri ForceAccountSelection(Uri originalUri)
+    {
+        var urlStr = originalUri.ToString();
+        if (urlStr.Contains("prompt="))
+        {
+            urlStr = System.Text.RegularExpressions.Regex.Replace(urlStr, @"prompt=[^&]+", "prompt=select_account");
+        }
+        else
+        {
+            var separator = urlStr.Contains('?') ? "&" : "?";
+            urlStr = $"{urlStr}{separator}prompt=select_account";
+        }
+        return new Uri(urlStr);
+    }
 }
