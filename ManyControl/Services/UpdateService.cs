@@ -131,11 +131,12 @@ public class UpdateService
 
         var totalBytes = response.Content.Headers.ContentLength ?? updateInfo.FileSize;
         await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        await using var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+        await using var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None, 65536, true);
 
-        var buffer = new byte[8192];
+        var buffer = new byte[65536];
         long totalBytesRead = 0;
         int bytesRead;
+        double lastReportedProgress = 0;
 
         while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
         {
@@ -145,7 +146,11 @@ public class UpdateService
             if (totalBytes > 0 && progress != null)
             {
                 var percentage = (double)totalBytesRead / totalBytes;
-                progress.Report(percentage);
+                if (percentage - lastReportedProgress >= 0.01 || percentage >= 0.99)
+                {
+                    lastReportedProgress = percentage;
+                    progress.Report(percentage);
+                }
             }
         }
 

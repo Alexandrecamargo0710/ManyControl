@@ -37,8 +37,8 @@
 		<ApplicationId>com.companyname.manycontrol</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.0.10</ApplicationDisplayVersion>
-		<ApplicationVersion>11</ApplicationVersion>
+		<ApplicationDisplayVersion>1.0.11</ApplicationDisplayVersion>
+		<ApplicationVersion>12</ApplicationVersion>
 
 		<!-- Windows App Icon -->
 		<ApplicationIcon>appicon.ico</ApplicationIcon>
@@ -51,6 +51,13 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+
+		<!-- Android Keystore Signing -->
+		<AndroidKeyStore Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">true</AndroidKeyStore>
+		<AndroidSigningKeyStore Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">manycontrol.keystore</AndroidSigningKeyStore>
+		<AndroidSigningKeyAlias Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">manycontrol</AndroidSigningKeyAlias>
+		<AndroidSigningKeyPass Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">ManyControl2026!</AndroidSigningKeyPass>
+		<AndroidSigningStorePass Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">ManyControl2026!</AndroidSigningStorePass>
 	</PropertyGroup>
 
 	<ItemGroup>
