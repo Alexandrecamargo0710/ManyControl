@@ -97,10 +97,14 @@ public partial class ConfiguracoesViewModel : ObservableObject
             await _syncService.ConnectGoogleDriveAsync();
             await AtualizarStatusAsync();
 
-            SyncStatusText = "Conta conectada com sucesso!";
+            SyncStatusText = "Sincronizando dados pela primeira vez...";
+            var result = await _syncService.SyncAsync();
+            await AtualizarStatusAsync();
+
+            SyncStatusText = result.Success ? "Conta conectada e sincronizada com sucesso!" : result.Message;
             await _dialogService.ShowAlertAsync(
                 "Sucesso",
-                $"Conta do Google conectada com sucesso!\nVocê já pode sincronizar seus dados.",
+                "Conta do Google conectada e dados sincronizados com sucesso!",
                 "OK");
         }
         catch (Exception ex)
@@ -232,10 +236,13 @@ public partial class ConfiguracoesViewModel : ObservableObject
 
             UpdateStatusText = $"Nova versão {update.TagName} disponível!";
 
+            var novidades = FormatarNotasAtualizacao(update.ReleaseNotes);
+
             var confirm = await _dialogService.ShowConfirmationAsync(
                 $"Nova Versão ({update.TagName}) 🎉",
                 $"Uma nova versão do ManyControl está pronta para instalação!\n\n" +
-                $"{(string.IsNullOrWhiteSpace(update.ReleaseNotes) ? string.Empty : $"Novidades:\n{update.ReleaseNotes}\n\n")}" +
+                $"📋 O que mudou nesta versão:\n" +
+                $"{novidades}\n\n" +
                 $"Deseja baixar e atualizar agora?",
                 "Atualizar Agora",
                 "Depois");
@@ -298,5 +305,49 @@ public partial class ConfiguracoesViewModel : ObservableObject
         {
             IsDownloadingUpdate = false;
         }
+    }
+
+    private static string FormatarNotasAtualizacao(string? rawNotes)
+    {
+        if (string.IsNullOrWhiteSpace(rawNotes))
+        {
+            return "• Melhorias de desempenho e correções gerais.";
+        }
+
+        var lines = rawNotes
+            .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(l => l.Trim())
+            .Where(l => !string.IsNullOrWhiteSpace(l)
+                     && !l.StartsWith("## What's Changed", StringComparison.OrdinalIgnoreCase)
+                     && !l.StartsWith("**Full Changelog**", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (lines.Count == 0)
+        {
+            return "• Melhorias de desempenho e correções gerais.";
+        }
+
+        for (int i = 0; i < lines.Count; i++)
+        {
+            var line = lines[i];
+            if (line.StartsWith("* ") || line.StartsWith("- "))
+            {
+                line = "• " + line[2..];
+            }
+            else if (!line.StartsWith("• "))
+            {
+                line = "• " + line;
+            }
+
+            var inUrlIdx = line.IndexOf(" in https://", StringComparison.OrdinalIgnoreCase);
+            if (inUrlIdx > 0)
+            {
+                line = line[..inUrlIdx];
+            }
+
+            lines[i] = line;
+        }
+
+        return string.Join("\n", lines);
     }
 }

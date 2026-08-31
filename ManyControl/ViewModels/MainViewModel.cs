@@ -16,6 +16,7 @@ public partial class MainViewModel : ObservableObject
     private readonly UpdateService _updateService;
     private readonly IDialogService _dialogService;
     private static bool _hasCheckedUpdateOnStartup = false;
+    private static bool _hasAutoSyncedOnStartup = false;
 
     // Métricas do Dashboard Geral
     [ObservableProperty]
@@ -200,6 +201,12 @@ public partial class MainViewModel : ObservableObject
         LastSyncText = _syncService.GetLastSyncText();
         LastSyncModeText = _syncService.GetLastSyncModeText();
         SyncStatusText = "Tudo sincronizado";
+
+        if (!_hasAutoSyncedOnStartup)
+        {
+            _hasAutoSyncedOnStartup = true;
+            _ = Task.Run(SincronizarInicialAutomaticoAsync);
+        }
 
         if (!_hasCheckedUpdateOnStartup)
         {
@@ -653,6 +660,76 @@ public partial class MainViewModel : ObservableObject
         return decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out amount);
     }
 
+    private async Task SincronizarInicialAutomaticoAsync()
+    {
+        try
+        {
+            await Task.Delay(1000);
+            if (_syncService.IsGoogleDriveConnected)
+            {
+                var result = await _syncService.SyncAsync();
+                if (result.Success)
+                {
+                    await MainThread.InvokeOnMainThreadAsync(async () =>
+                    {
+                        LastSyncText = _syncService.GetLastSyncText();
+                        LastSyncModeText = _syncService.GetLastSyncModeText();
+                        SyncStatusText = "Tudo sincronizado";
+                        await CarregarDadosAsync();
+                    });
+                }
+            }
+        }
+        catch
+        {
+            // Silencioso na inicialização caso esteja offline
+        }
+    }
+
+    private static string FormatarNotasAtualizacao(string? rawNotes)
+    {
+        if (string.IsNullOrWhiteSpace(rawNotes))
+        {
+            return "• Melhorias de desempenho e correções gerais.";
+        }
+
+        var lines = rawNotes
+            .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(l => l.Trim())
+            .Where(l => !string.IsNullOrWhiteSpace(l)
+                     && !l.StartsWith("## What's Changed", StringComparison.OrdinalIgnoreCase)
+                     && !l.StartsWith("**Full Changelog**", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (lines.Count == 0)
+        {
+            return "• Melhorias de desempenho e correções gerais.";
+        }
+
+        for (int i = 0; i < lines.Count; i++)
+        {
+            var line = lines[i];
+            if (line.StartsWith("* ") || line.StartsWith("- "))
+            {
+                line = "• " + line[2..];
+            }
+            else if (!line.StartsWith("• "))
+            {
+                line = "• " + line;
+            }
+
+            var inUrlIdx = line.IndexOf(" in https://", StringComparison.OrdinalIgnoreCase);
+            if (inUrlIdx > 0)
+            {
+                line = line[..inUrlIdx];
+            }
+
+            lines[i] = line;
+        }
+
+        return string.Join("\n", lines);
+    }
+
     private async Task VerificarAtualizacaoInicialAsync()
     {
         try
@@ -664,10 +741,13 @@ public partial class MainViewModel : ObservableObject
             {
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
+                    var novidades = FormatarNotasAtualizacao(update.ReleaseNotes);
+
                     var confirm = await _dialogService.ShowConfirmationAsync(
                         $"Nova Versão ({update.TagName}) 🎉",
                         $"Uma nova versão do ManyControl está disponível!\n\n" +
-                        $"{(string.IsNullOrWhiteSpace(update.ReleaseNotes) ? string.Empty : $"Novidades:\n{update.ReleaseNotes}\n\n")}" +
+                        $"📋 O que mudou nesta versão:\n" +
+                        $"{novidades}\n\n" +
                         $"Deseja baixar e atualizar agora?",
                         "Atualizar Agora",
                         "Depois");
