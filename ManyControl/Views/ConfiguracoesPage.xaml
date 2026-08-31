@@ -21,8 +21,9 @@
         </Style>
     </ContentPage.Resources>
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="18">
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="20" Spacing="18">
 
             <!-- Card 1: Conexão com o Google Drive (Modo NÃO CONECTADO) -->
             <Border Style="{StaticResource CardBorderStyle}"
@@ -197,5 +198,67 @@
 
         </VerticalStackLayout>
     </ScrollView>
+
+    <!-- Overlay Bloqueante de Atualização em Tela Cheia -->
+    <Grid IsVisible="{Binding IsDownloadingUpdate}"
+          ZIndex="9999"
+          BackgroundColor="#F20B0F19"
+          InputTransparent="False"
+          HorizontalOptions="Fill"
+          VerticalOptions="Fill">
+        <Border BackgroundColor="#111827"
+                Stroke="#374151"
+                StrokeThickness="1"
+                Padding="32"
+                MaximumWidthRequest="420"
+                Margin="24"
+                HorizontalOptions="Center"
+                VerticalOptions="Center">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="24" />
+            </Border.StrokeShape>
+            <VerticalStackLayout Spacing="18" HorizontalOptions="Center">
+                <Border BackgroundColor="#0284C7"
+                        StrokeThickness="0"
+                        WidthRequest="64"
+                        HeightRequest="64"
+                        HorizontalOptions="Center">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="32" />
+                    </Border.StrokeShape>
+                    <Label Text="↓"
+                           FontSize="32"
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <Label Text="Atualizando ManyControl"
+                       TextColor="White"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center" />
+
+                <Label Text="Baixando os arquivos da nova versão...&#10;O aplicativo será reiniciado automaticamente ao concluir."
+                       TextColor="#9CA3AF"
+                       FontSize="13"
+                       HorizontalTextAlignment="Center"
+                       HorizontalOptions="Center" />
+
+                <ProgressBar Progress="{Binding UpdateProgress}"
+                             ProgressColor="#38BDF8"
+                             HeightRequest="8"
+                             HorizontalOptions="Fill" />
+
+                <Label Text="{Binding UpdateProgressText}"
+                       TextColor="#38BDF8"
+                       FontSize="14"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</Grid>
 
 </ContentPage>

@@ -1,6 +1,6 @@
 ; Script de instalador Inno Setup para ManyControl
 #define MyAppName "ManyControl"
-#define MyAppVersion "1.0.4"
+#define MyAppVersion "1.0.5"
 #define MyAppPublisher "ManyControl"
 #define MyAppExeName "ManyControl.exe"
 #define MySourceDir "ManyControl\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish"
@@ -37,4 +37,5 @@ Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFile
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall
+Filename: "{app}\{#MyAppExeName}"; Flags: nowait; Check: WizardSilent

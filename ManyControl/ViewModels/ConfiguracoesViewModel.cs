@@ -285,7 +285,8 @@ public partial class ConfiguracoesViewModel : ObservableObject
                 throw new InvalidOperationException("Falha ao salvar o arquivo de atualização.");
             }
 
-            UpdateProgressText = "Download concluído! Iniciando atualização...";
+            UpdateProgressText = "Download concluído! Reiniciando aplicativo...";
+            await Task.Delay(400);
             _updateService.InstallUpdate(downloadedFile);
         }
         catch (Exception ex)

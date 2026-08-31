@@ -42,6 +42,7 @@ public class SyncService
 
     public async Task ConnectGoogleDriveAsync()
     {
+        _googleDriveService.Disconnect();
         await _googleDriveService.AuthorizeAsync();
     }
 

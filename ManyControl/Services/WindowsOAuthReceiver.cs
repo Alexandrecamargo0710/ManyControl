@@ -249,12 +249,12 @@ public class WindowsOAuthReceiver : ICodeReceiver
         var urlStr = originalUri.ToString();
         if (urlStr.Contains("prompt="))
         {
-            urlStr = System.Text.RegularExpressions.Regex.Replace(urlStr, @"prompt=[^&]+", "prompt=select_account");
+            urlStr = System.Text.RegularExpressions.Regex.Replace(urlStr, @"prompt=[^&]+", "prompt=select_account%20consent");
         }
         else
         {
             var separator = urlStr.Contains('?') ? "&" : "?";
-            urlStr = $"{urlStr}{separator}prompt=select_account";
+            urlStr = $"{urlStr}{separator}prompt=select_account%20consent";
         }
         return new Uri(urlStr);
     }

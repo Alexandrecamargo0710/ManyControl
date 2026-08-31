@@ -43,6 +43,15 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsSyncing { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsDownloadingUpdate { get; set; }
+
+    [ObservableProperty]
+    public partial double UpdateProgress { get; set; }
+
+    [ObservableProperty]
+    public partial string UpdateProgressText { get; set; } = string.Empty;
+
     // Listas Recentes
     public ObservableCollection<Receita> ReceitasRecentes { get; } = new();
     public ObservableCollection<Despesa> DespesasRecentes { get; } = new();
@@ -494,16 +503,29 @@ public partial class MainViewModel : ObservableObject
 
     private async Task BaixarEInstalarAtualizacaoAsync(UpdateInfo update)
     {
+        IsDownloadingUpdate = true;
+        UpdateProgress = 0;
+        UpdateProgressText = "Iniciando download da atualização...";
+
+        var progress = new Progress<double>(p =>
+        {
+            UpdateProgress = p;
+            UpdateProgressText = $"Baixando atualização... {p * 100:F0}%";
+        });
+
         try
         {
-            var downloadedFile = await _updateService.DownloadUpdateAsync(update);
+            var downloadedFile = await _updateService.DownloadUpdateAsync(update, progress);
             if (!string.IsNullOrWhiteSpace(downloadedFile) && File.Exists(downloadedFile))
             {
+                UpdateProgressText = "Download concluído! Reiniciando aplicativo...";
+                await Task.Delay(400);
                 _updateService.InstallUpdate(downloadedFile);
             }
         }
         catch (Exception ex)
         {
+            IsDownloadingUpdate = false;
             await _dialogService.ShowAlertAsync("Falha na Atualização", $"Não foi possível atualizar automaticamente: {ex.Message}", "OK");
         }
     }
