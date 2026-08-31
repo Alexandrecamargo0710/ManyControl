@@ -30,6 +30,12 @@ public partial class ExtratoViewModel : ObservableObject
     public partial decimal SaldoMes { get; set; }
 
     [ObservableProperty]
+    public partial decimal TotalDespesasPagasMes { get; set; }
+
+    [ObservableProperty]
+    public partial decimal TotalDespesasPendentesMes { get; set; }
+
+    [ObservableProperty]
     public partial int TotalTransacoesMes { get; set; }
 
     [ObservableProperty]
@@ -43,6 +49,12 @@ public partial class ExtratoViewModel : ObservableObject
 
     [ObservableProperty]
     public partial bool IsFiltroDespesas { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsFiltroPendentes { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsFiltroPagas { get; set; }
 
     [ObservableProperty]
     public partial double ProporcaoDespesas { get; set; }
@@ -78,10 +90,16 @@ public partial class ExtratoViewModel : ObservableObject
     public partial bool EditRecorrente { get; set; }
 
     [ObservableProperty]
+    public partial bool EditPaga { get; set; }
+
+    [ObservableProperty]
     public partial bool IsEditRecorrenteVisible { get; set; }
 
     [ObservableProperty]
     public partial bool IsEditVencimentoVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsEditPagaVisible { get; set; }
 
     private Guid? _editingId;
     private string _editingTipo = string.Empty;
@@ -112,6 +130,8 @@ public partial class ExtratoViewModel : ObservableObject
 
             TotalReceitasMes = receitas.Sum(r => r.Valor);
             TotalDespesasMes = despesas.Sum(d => d.Valor);
+            TotalDespesasPagasMes = despesas.Where(d => d.Paga).Sum(d => d.Valor);
+            TotalDespesasPendentesMes = despesas.Where(d => !d.Paga).Sum(d => d.Valor);
             SaldoMes = TotalReceitasMes - TotalDespesasMes;
 
             if (TotalReceitasMes > 0)
@@ -146,6 +166,7 @@ public partial class ExtratoViewModel : ObservableObject
                         Data = r.Data,
                         Vencimento = null,
                         Recorrente = false,
+                        Paga = false,
                         ValorTexto = $"+ {r.Valor.ToString("C", PtBr)}",
                         ValorCor = "#10B981", // Verde
                         TipoBadge = "Receita",
@@ -155,9 +176,19 @@ public partial class ExtratoViewModel : ObservableObject
                 }
             }
 
-            if (FiltroTipo is "Todos" or "Despesas")
+            if (FiltroTipo is "Todos" or "Despesas" or "Pendentes" or "Pagas")
             {
-                foreach (var d in despesas)
+                var despesasFiltradas = despesas;
+                if (FiltroTipo == "Pendentes")
+                {
+                    despesasFiltradas = despesas.Where(d => !d.Paga).ToList();
+                }
+                else if (FiltroTipo == "Pagas")
+                {
+                    despesasFiltradas = despesas.Where(d => d.Paga).ToList();
+                }
+
+                foreach (var d in despesasFiltradas)
                 {
                     lista.Add(new TransacaoItemViewModel
                     {
@@ -168,6 +199,7 @@ public partial class ExtratoViewModel : ObservableObject
                         Data = d.Data,
                         Vencimento = d.Vencimento,
                         Recorrente = d.Recorrente,
+                        Paga = d.Paga,
                         ValorTexto = $"- {d.Valor.ToString("C", PtBr)}",
                         ValorCor = "#EF4444", // Vermelho
                         TipoBadge = d.Recorrente ? "Recorrente" : "Despesa",
@@ -219,7 +251,47 @@ public partial class ExtratoViewModel : ObservableObject
         IsFiltroTodos = tipo == "Todos";
         IsFiltroReceitas = tipo == "Receitas";
         IsFiltroDespesas = tipo == "Despesas";
+        IsFiltroPendentes = tipo == "Pendentes";
+        IsFiltroPagas = tipo == "Pagas";
         await CarregarMesAsync();
+    }
+
+    [RelayCommand]
+    public async Task AlternarStatusPagamentoAsync(TransacaoItemViewModel? item)
+    {
+        if (item is null || item.Tipo != "Despesa")
+        {
+            return;
+        }
+
+        if (!item.Paga)
+        {
+            var confirmar = await _dialogService.ShowConfirmationAsync(
+                "Confirmar Pagamento",
+                $"Marcar a despesa '{item.Descricao}' ({item.Valor.ToString("C", PtBr)}) como PAGA?",
+                "Sim, marcar como Paga",
+                "Cancelar");
+
+            if (confirmar)
+            {
+                await _financeService.SetDespesaPagaAsync(item.Id, true);
+                await CarregarMesAsync();
+            }
+        }
+        else
+        {
+            var confirmar = await _dialogService.ShowConfirmationAsync(
+                "Reabrir Despesa",
+                $"Deseja reabrir a despesa '{item.Descricao}' ({item.Valor.ToString("C", PtBr)}) como PENDENTE?",
+                "Sim, reabrir",
+                "Cancelar");
+
+            if (confirmar)
+            {
+                await _financeService.SetDespesaPagaAsync(item.Id, false);
+                await CarregarMesAsync();
+            }
+        }
     }
 
     [RelayCommand]
@@ -243,13 +315,17 @@ public partial class ExtratoViewModel : ObservableObject
             EditModalTitle = "Editar receita";
             IsEditRecorrenteVisible = false;
             IsEditVencimentoVisible = false;
+            IsEditPagaVisible = false;
+            EditPaga = false;
         }
         else
         {
             EditModalTitle = "Editar despesa";
             IsEditRecorrenteVisible = true;
             IsEditVencimentoVisible = true;
+            IsEditPagaVisible = true;
             EditRecorrente = item.Recorrente;
+            EditPaga = item.Paga;
             EditVencimento = item.Vencimento ?? item.Data;
         }
     }
@@ -328,7 +404,8 @@ public partial class ExtratoViewModel : ObservableObject
                 EditData,
                 null,
                 EditVencimento,
-                EditRecorrente);
+                EditRecorrente,
+                EditPaga);
         }
 
         FecharEdicaoModal();
@@ -346,9 +423,11 @@ public partial class ExtratoViewModel : ObservableObject
         EditValor = string.Empty;
         EditData = DateTime.Today;
         EditRecorrente = false;
+        EditPaga = false;
         EditVencimento = DateTime.Today;
         IsEditRecorrenteVisible = false;
         IsEditVencimentoVisible = false;
+        IsEditPagaVisible = false;
     }
 
     private void AtualizarTextoMes()
@@ -395,6 +474,12 @@ public class TransacaoItemViewModel
     public DateTime? Vencimento { get; set; }
     public bool HasVencimento => Vencimento.HasValue;
     public bool Recorrente { get; set; }
+    public bool Paga { get; set; }
+    public bool IsDespesa => Tipo == "Despesa";
+    public string StatusPagamentoTexto => Paga ? "PAGA" : "PENDENTE";
+    public string StatusPagamentoCor => Paga ? "#34D399" : "#FBBF24";
+    public string StatusPagamentoFundo => Paga ? "#064E3B" : "#451A03";
+    public string StatusPagamentoIcone => Paga ? "✓" : "⏳";
     public string ValorTexto { get; set; } = string.Empty;
     public string ValorCor { get; set; } = "#FFFFFF";
     public string TipoBadge { get; set; } = string.Empty;

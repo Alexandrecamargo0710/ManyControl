@@ -24,6 +24,7 @@ public class DatabaseService
 
         await context.Database.EnsureCreatedAsync();
         await EnsureDeletedAtColumnsAsync(context);
+        await EnsureDespesaPagamentoColumnsAsync(context);
 
         if (!await context.Categorias.AnyAsync())
         {
@@ -85,6 +86,12 @@ public class DatabaseService
         await TryExecuteAsync(context, "ALTER TABLE Categorias ADD COLUMN DeletedAt TEXT NULL");
         await TryExecuteAsync(context, "ALTER TABLE Receitas ADD COLUMN DeletedAt TEXT NULL");
         await TryExecuteAsync(context, "ALTER TABLE Despesas ADD COLUMN DeletedAt TEXT NULL");
+    }
+
+    private static async Task EnsureDespesaPagamentoColumnsAsync(FinanceDbContext context)
+    {
+        await TryExecuteAsync(context, "ALTER TABLE Despesas ADD COLUMN Paga INTEGER NOT NULL DEFAULT 0");
+        await TryExecuteAsync(context, "ALTER TABLE Despesas ADD COLUMN DataPagamento TEXT NULL");
     }
 
     private static async Task TryExecuteAsync(FinanceDbContext context, string sql)

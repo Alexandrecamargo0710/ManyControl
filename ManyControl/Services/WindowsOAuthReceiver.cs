@@ -180,17 +180,8 @@ public class WindowsOAuthReceiver : ICodeReceiver
     <div class="card">
         <div class="icon-container">✓</div>
         <h1>Conexão Realizada com Sucesso!</h1>
-        <p>Sua conta do Google foi conectada ao <strong>ManyControl</strong> com segurança.<br/>Você já pode fechar esta aba e voltar ao aplicativo.</p>
-        <span class="badge">Fechando aba automaticamente...</span>
+        <p>Sua conta do Google foi conectada ao <strong>ManyControl</strong> com segurança.<br/><br/>Você já pode fechar esta aba e voltar ao aplicativo.</p>
     </div>
-    <script>
-        setTimeout(function() {
-            try {
-                window.open('', '_self', '');
-                window.close();
-            } catch (e) {}
-        }, 2200);
-    </script>
 </body>
 </html>
 """;

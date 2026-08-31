@@ -17,7 +17,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IDialogService _dialogService;
     private static bool _hasCheckedUpdateOnStartup = false;
 
-    // Métricas do Dashboard
+    // Métricas do Dashboard Geral
     [ObservableProperty]
     public partial decimal Saldo { get; set; }
 
@@ -29,6 +29,31 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     public partial int TotalCategorias { get; set; }
+
+    // Filtro e Métricas do Mês Selecionado
+    [ObservableProperty]
+    public partial DateTime DataReferencia { get; set; } = DateTime.Today;
+
+    [ObservableProperty]
+    public partial string MesAnoTexto { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool IsMesAtual { get; set; } = true;
+
+    [ObservableProperty]
+    public partial decimal ReceitasMes { get; set; }
+
+    [ObservableProperty]
+    public partial decimal DespesasMes { get; set; }
+
+    [ObservableProperty]
+    public partial decimal BalancoMes { get; set; }
+
+    [ObservableProperty]
+    public partial decimal DespesasPagasMes { get; set; }
+
+    [ObservableProperty]
+    public partial decimal DespesasPendentesMes { get; set; }
 
     // Sincronização
     [ObservableProperty]
@@ -52,7 +77,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     public partial string UpdateProgressText { get; set; } = string.Empty;
 
-    // Listas Recentes
+    // Listas Recentes do Mês
     public ObservableCollection<Receita> ReceitasRecentes { get; } = new();
     public ObservableCollection<Despesa> DespesasRecentes { get; } = new();
 
@@ -82,6 +107,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     public partial bool DespesaRecorrente { get; set; }
 
+    [ObservableProperty]
+    public partial bool DespesaPaga { get; set; }
+
     // Modal de Edição (Overlay)
     [ObservableProperty]
     public partial bool IsEditModalVisible { get; set; }
@@ -105,10 +133,16 @@ public partial class MainViewModel : ObservableObject
     public partial bool EditRecorrente { get; set; }
 
     [ObservableProperty]
+    public partial bool EditPaga { get; set; }
+
+    [ObservableProperty]
     public partial bool IsEditRecorrenteVisible { get; set; }
 
     [ObservableProperty]
     public partial bool IsEditVencimentoVisible { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsEditPagaVisible { get; set; }
 
     private Guid? _editingReceitaId;
     private Guid? _editingDespesaId;
@@ -120,30 +154,42 @@ public partial class MainViewModel : ObservableObject
         _syncService = syncService;
         _updateService = updateService;
         _dialogService = dialogService;
+        AtualizarTextoMes();
     }
 
     [RelayCommand]
     public async Task CarregarDadosAsync()
     {
+        AtualizarTextoMes();
+
         await _financeService.ProcessarDespesasRecorrentesAsync(DateTime.Today);
 
+        var ano = DataReferencia.Year;
+        var mes = DataReferencia.Month;
+
         var categorias = await _financeService.GetCategoriasAsync();
-        var receitas = await _financeService.GetReceitasAsync();
-        var despesas = await _financeService.GetDespesasAsync();
+        var receitasDoMes = await _financeService.GetReceitasPorMesAsync(ano, mes);
+        var despesasDoMes = await _financeService.GetDespesasPorMesAsync(ano, mes);
 
         Saldo = await _financeService.GetSaldoAsync();
         TotalReceitas = await _financeService.GetTotalReceitasAsync();
         TotalDespesas = await _financeService.GetTotalDespesasAsync();
         TotalCategorias = categorias.Count;
 
+        ReceitasMes = receitasDoMes.Sum(r => r.Valor);
+        DespesasMes = despesasDoMes.Sum(d => d.Valor);
+        BalancoMes = ReceitasMes - DespesasMes;
+        DespesasPagasMes = despesasDoMes.Where(d => d.Paga).Sum(d => d.Valor);
+        DespesasPendentesMes = despesasDoMes.Where(d => !d.Paga).Sum(d => d.Valor);
+
         ReceitasRecentes.Clear();
-        foreach (var receita in receitas.Take(5))
+        foreach (var receita in receitasDoMes.Take(6))
         {
             ReceitasRecentes.Add(receita);
         }
 
         DespesasRecentes.Clear();
-        foreach (var despesa in despesas.Take(5))
+        foreach (var despesa in despesasDoMes.Take(6))
         {
             DespesasRecentes.Add(despesa);
         }
@@ -157,6 +203,41 @@ public partial class MainViewModel : ObservableObject
             _hasCheckedUpdateOnStartup = true;
             _ = Task.Run(VerificarAtualizacaoInicialAsync);
         }
+    }
+
+    [RelayCommand]
+    public async Task MesAnteriorAsync()
+    {
+        DataReferencia = DataReferencia.AddMonths(-1);
+        await CarregarDadosAsync();
+    }
+
+    [RelayCommand]
+    public async Task ProximoMesAsync()
+    {
+        DataReferencia = DataReferencia.AddMonths(1);
+        await CarregarDadosAsync();
+    }
+
+    [RelayCommand]
+    public async Task MesAtualAsync()
+    {
+        DataReferencia = DateTime.Today;
+        await CarregarDadosAsync();
+    }
+
+    private void AtualizarTextoMes()
+    {
+        var hoje = DateTime.Today;
+        IsMesAtual = DataReferencia.Year == hoje.Year && DataReferencia.Month == hoje.Month;
+
+        var nomeMes = DataReferencia.ToString("MMMM", PtBr);
+        if (!string.IsNullOrEmpty(nomeMes))
+        {
+            nomeMes = char.ToUpper(nomeMes[0]) + nomeMes[1..];
+        }
+
+        MesAnoTexto = $"{nomeMes} de {DataReferencia.Year}";
     }
 
     [RelayCommand]
@@ -211,7 +292,8 @@ public partial class MainViewModel : ObservableObject
             DespesaData,
             null,
             DespesaVencimento,
-            DespesaRecorrente);
+            DespesaRecorrente,
+            DespesaPaga);
 
         LimparFormularioDespesa();
         await CarregarDadosAsync();
@@ -221,6 +303,44 @@ public partial class MainViewModel : ObservableObject
     public void CancelarDespesa()
     {
         LimparFormularioDespesa();
+    }
+
+    [RelayCommand]
+    public async Task AlternarStatusPagamentoAsync(Despesa? despesa)
+    {
+        if (despesa is null)
+        {
+            return;
+        }
+
+        if (!despesa.Paga)
+        {
+            var confirmar = await _dialogService.ShowConfirmationAsync(
+                "Confirmar Pagamento",
+                $"Marcar a despesa '{despesa.Descricao}' ({despesa.Valor.ToString("C", PtBr)}) como PAGA?",
+                "Sim, marcar como Paga",
+                "Cancelar");
+
+            if (confirmar)
+            {
+                await _financeService.SetDespesaPagaAsync(despesa.Id, true);
+                await CarregarDadosAsync();
+            }
+        }
+        else
+        {
+            var confirmar = await _dialogService.ShowConfirmationAsync(
+                "Reabrir Despesa",
+                $"Deseja reabrir a despesa '{despesa.Descricao}' ({despesa.Valor.ToString("C", PtBr)}) como PENDENTE?",
+                "Sim, reabrir",
+                "Cancelar");
+
+            if (confirmar)
+            {
+                await _financeService.SetDespesaPagaAsync(despesa.Id, false);
+                await CarregarDadosAsync();
+            }
+        }
     }
 
     [RelayCommand]
@@ -274,7 +394,6 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-
     [RelayCommand]
     public void EditarReceita(Receita? receita)
     {
@@ -284,7 +403,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         _editingReceitaId = receita.Id;
-        OpenEditModal(EditMode.Receita, receita.Descricao, receita.Valor, receita.Data, false, null);
+        OpenEditModal(EditMode.Receita, receita.Descricao, receita.Valor, receita.Data, false, false, null);
     }
 
     [RelayCommand]
@@ -319,7 +438,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         _editingDespesaId = despesa.Id;
-        OpenEditModal(EditMode.Despesa, despesa.Descricao, despesa.Valor, despesa.Data, despesa.Recorrente, despesa.Vencimento);
+        OpenEditModal(EditMode.Despesa, despesa.Descricao, despesa.Valor, despesa.Data, despesa.Recorrente, despesa.Paga, despesa.Vencimento);
     }
 
     [RelayCommand]
@@ -378,7 +497,8 @@ public partial class MainViewModel : ObservableObject
                 EditData,
                 null,
                 EditVencimento,
-                EditRecorrente);
+                EditRecorrente,
+                EditPaga);
         }
         else
         {
@@ -402,12 +522,14 @@ public partial class MainViewModel : ObservableObject
         EditValor = string.Empty;
         EditData = DateTime.Today;
         EditRecorrente = false;
+        EditPaga = false;
         EditVencimento = DateTime.Today;
         IsEditRecorrenteVisible = false;
         IsEditVencimentoVisible = false;
+        IsEditPagaVisible = false;
     }
 
-    private void OpenEditModal(EditMode mode, string descricao, decimal valor, DateTime data, bool recorrente, DateTime? vencimento)
+    private void OpenEditModal(EditMode mode, string descricao, decimal valor, DateTime data, bool recorrente, bool paga, DateTime? vencimento)
     {
         _currentEditMode = mode;
         IsEditModalVisible = true;
@@ -417,18 +539,21 @@ public partial class MainViewModel : ObservableObject
             EditModalTitle = "Editar receita";
             IsEditRecorrenteVisible = false;
             IsEditVencimentoVisible = false;
+            IsEditPagaVisible = false;
         }
         else
         {
             EditModalTitle = "Editar despesa";
             IsEditRecorrenteVisible = true;
             IsEditVencimentoVisible = true;
+            IsEditPagaVisible = true;
         }
 
         EditDescricao = descricao;
         EditValor = valor.ToString("N2", PtBr);
         EditData = data;
         EditRecorrente = recorrente;
+        EditPaga = paga;
         EditVencimento = vencimento ?? data;
     }
 
@@ -446,6 +571,7 @@ public partial class MainViewModel : ObservableObject
         DespesaData = DateTime.Today;
         DespesaVencimento = DateTime.Today;
         DespesaRecorrente = false;
+        DespesaPaga = false;
     }
 
     private static bool TryParseMoney(string? value, out decimal amount)

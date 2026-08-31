@@ -219,6 +219,24 @@ public class FinanceService
             .SumAsync(d => (decimal?)d.Valor) ?? 0m;
     }
 
+    public async Task<decimal> GetTotalDespesasPagasPorMesAsync(int ano, int mes)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+
+        return await context.Despesas
+            .Where(d => d.DeletedAt == null && d.Data.Year == ano && d.Data.Month == mes && d.Paga)
+            .SumAsync(d => (decimal?)d.Valor) ?? 0m;
+    }
+
+    public async Task<decimal> GetTotalDespesasPendentesPorMesAsync(int ano, int mes)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+
+        return await context.Despesas
+            .Where(d => d.DeletedAt == null && d.Data.Year == ano && d.Data.Month == mes && !d.Paga)
+            .SumAsync(d => (decimal?)d.Valor) ?? 0m;
+    }
+
     public async Task<decimal> GetSaldoAsync()
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
@@ -330,7 +348,7 @@ public class FinanceService
         await context.SaveChangesAsync();
     }
 
-    public async Task AddDespesaAsync(string descricao, decimal valor, DateTime data, Guid? categoriaId, DateTime? vencimento, bool recorrente)
+    public async Task AddDespesaAsync(string descricao, decimal valor, DateTime data, Guid? categoriaId, DateTime? vencimento, bool recorrente, bool paga = false)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
@@ -343,6 +361,8 @@ public class FinanceService
             CategoriaId = categoriaId,
             Vencimento = vencimento,
             Recorrente = recorrente,
+            Paga = paga,
+            DataPagamento = paga ? DateTime.Now : null,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         });
@@ -350,7 +370,7 @@ public class FinanceService
         await context.SaveChangesAsync();
     }
 
-    public async Task UpdateDespesaAsync(Guid id, string descricao, decimal valor, DateTime data, Guid? categoriaId, DateTime? vencimento, bool recorrente)
+    public async Task UpdateDespesaAsync(Guid id, string descricao, decimal valor, DateTime data, Guid? categoriaId, DateTime? vencimento, bool recorrente, bool? paga = null)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
@@ -366,6 +386,28 @@ public class FinanceService
         despesa.CategoriaId = categoriaId;
         despesa.Vencimento = vencimento;
         despesa.Recorrente = recorrente;
+        if (paga.HasValue)
+        {
+            despesa.Paga = paga.Value;
+            despesa.DataPagamento = paga.Value ? (despesa.DataPagamento ?? DateTime.Now) : null;
+        }
+        despesa.UpdatedAt = DateTime.UtcNow;
+
+        await context.SaveChangesAsync();
+    }
+
+    public async Task SetDespesaPagaAsync(Guid id, bool paga)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+
+        var despesa = await context.Despesas.FirstOrDefaultAsync(d => d.Id == id && d.DeletedAt == null);
+        if (despesa is null)
+        {
+            return;
+        }
+
+        despesa.Paga = paga;
+        despesa.DataPagamento = paga ? DateTime.Now : null;
         despesa.UpdatedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync();

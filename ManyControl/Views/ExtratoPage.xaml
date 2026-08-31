@@ -60,22 +60,36 @@
                 </Border>
 
                 <!-- Cards de Totais do Mês Responsivos -->
-                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
                     <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#065F46" Grid.Row="0" Grid.Column="0" Padding="12">
                         <VerticalStackLayout Spacing="2">
-                            <Label Text="Entradas" TextColor="#D1FAE5" FontSize="12" />
+                            <Label Text="Entradas do Mês" TextColor="#D1FAE5" FontSize="12" />
                             <Label Text="{Binding TotalReceitasMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="18" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#991B1B" Grid.Row="0" Grid.Column="1" Padding="12">
                         <VerticalStackLayout Spacing="2">
-                            <Label Text="Saídas" TextColor="#FEE2E2" FontSize="12" />
+                            <Label Text="Saídas do Mês" TextColor="#FEE2E2" FontSize="12" />
                             <Label Text="{Binding TotalDespesasMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="18" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#1F2937" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Padding="12">
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#451A03" Grid.Row="1" Grid.Column="0" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="A Pagar (Pendente)" TextColor="#FDE68A" FontSize="12" />
+                            <Label Text="{Binding TotalDespesasPendentesMes, StringFormat='R$ {0:N2}'}" TextColor="#FBBF24" FontSize="16" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#064E3B" Grid.Row="1" Grid.Column="1" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Já Pago" TextColor="#A7F3D0" FontSize="12" />
+                            <Label Text="{Binding TotalDespesasPagasMes, StringFormat='R$ {0:N2}'}" TextColor="#34D399" FontSize="16" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#1F2937" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Padding="12">
                         <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
                             <Label Text="Balanço do Mês" TextColor="#E5E7EB" FontSize="13" VerticalOptions="Center" />
                             <Label Grid.Column="1" Text="{Binding SaldoMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="20" FontAttributes="Bold" VerticalOptions="Center" />
@@ -98,12 +112,12 @@
                 </Border>
 
                 <!-- Filtros Rápidos com Botões Proporcionais -->
-                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
-                    <Button Grid.Column="0"
-                            Text="Todos"
-                            HeightRequest="38"
-                            Padding="0"
+                <FlexLayout Wrap="Wrap" JustifyContent="SpaceBetween" AlignItems="Center">
+                    <Button Text="Todos"
+                            HeightRequest="36"
+                            Padding="12,0"
                             FontSize="12"
+                            Margin="0,0,4,6"
                             CornerRadius="8"
                             Command="{Binding MudarFiltroCommand}"
                             CommandParameter="Todos">
@@ -119,11 +133,11 @@
                         </Button.Triggers>
                     </Button>
 
-                    <Button Grid.Column="1"
-                            Text="Receitas"
-                            HeightRequest="38"
-                            Padding="0"
+                    <Button Text="Receitas"
+                            HeightRequest="36"
+                            Padding="12,0"
                             FontSize="12"
+                            Margin="0,0,4,6"
                             CornerRadius="8"
                             Command="{Binding MudarFiltroCommand}"
                             CommandParameter="Receitas">
@@ -139,11 +153,11 @@
                         </Button.Triggers>
                     </Button>
 
-                    <Button Grid.Column="2"
-                            Text="Despesas"
-                            HeightRequest="38"
-                            Padding="0"
+                    <Button Text="Despesas"
+                            HeightRequest="36"
+                            Padding="12,0"
                             FontSize="12"
+                            Margin="0,0,4,6"
                             CornerRadius="8"
                             Command="{Binding MudarFiltroCommand}"
                             CommandParameter="Despesas">
@@ -158,7 +172,47 @@
                             </DataTrigger>
                         </Button.Triggers>
                     </Button>
-                </Grid>
+
+                    <Button Text="Pendentes ⏳"
+                            HeightRequest="36"
+                            Padding="12,0"
+                            FontSize="12"
+                            Margin="0,0,4,6"
+                            CornerRadius="8"
+                            Command="{Binding MudarFiltroCommand}"
+                            CommandParameter="Pendentes">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsFiltroPendentes}" Value="True">
+                                <Setter Property="BackgroundColor" Value="#D97706" />
+                                <Setter Property="TextColor" Value="White" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsFiltroPendentes}" Value="False">
+                                <Setter Property="BackgroundColor" Value="#374151" />
+                                <Setter Property="TextColor" Value="#D1D5DB" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Text="Pagas ✓"
+                            HeightRequest="36"
+                            Padding="12,0"
+                            FontSize="12"
+                            Margin="0,0,0,6"
+                            CornerRadius="8"
+                            Command="{Binding MudarFiltroCommand}"
+                            CommandParameter="Pagas">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsFiltroPagas}" Value="True">
+                                <Setter Property="BackgroundColor" Value="#10B981" />
+                                <Setter Property="TextColor" Value="White" />
+                            </DataTrigger>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsFiltroPagas}" Value="False">
+                                <Setter Property="BackgroundColor" Value="#374151" />
+                                <Setter Property="TextColor" Value="#D1D5DB" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+                </FlexLayout>
 
                 <!-- Lista Completa de Transações do Mês -->
                 <VerticalStackLayout Spacing="8">
@@ -184,22 +238,43 @@
                                         Padding="14,12"
                                         BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}">
                                     <VerticalStackLayout Spacing="8">
-                                        <!-- Linha 1: Badge + Descrição e Valor em destaque -->
-                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
-                                            <!-- Badge de Tipo -->
-                                            <Border Grid.Column="0"
-                                                    StrokeThickness="0"
-                                                    Padding="8,3"
-                                                    BackgroundColor="{Binding TipoBadgeCor}"
-                                                    VerticalOptions="Center">
-                                                <Border.StrokeShape>
-                                                    <RoundRectangle CornerRadius="6" />
-                                                </Border.StrokeShape>
-                                                <Label Text="{Binding TipoBadge}"
-                                                       TextColor="White"
-                                                       FontSize="11"
-                                                       FontAttributes="Bold" />
-                                            </Border>
+                                        <!-- Linha 1: Badges + Descrição e Valor em destaque -->
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                                            <!-- Badges de Tipo e Status de Pagamento -->
+                                            <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                                                <!-- Badge de Tipo (Receita/Despesa/Recorrente) -->
+                                                <Border StrokeThickness="0"
+                                                        Padding="8,3"
+                                                        BackgroundColor="{Binding TipoBadgeCor}"
+                                                        VerticalOptions="Center">
+                                                    <Border.StrokeShape>
+                                                        <RoundRectangle CornerRadius="6" />
+                                                    </Border.StrokeShape>
+                                                    <Label Text="{Binding TipoBadge}"
+                                                           TextColor="White"
+                                                           FontSize="10"
+                                                           FontAttributes="Bold" />
+                                                </Border>
+
+                                                <!-- Badge Interativo de Pagamento (Apenas para Despesas) -->
+                                                <Border StrokeThickness="0"
+                                                        Padding="8,3"
+                                                        BackgroundColor="{Binding StatusPagamentoFundo}"
+                                                        IsVisible="{Binding IsDespesa}"
+                                                        VerticalOptions="Center">
+                                                    <Border.StrokeShape>
+                                                        <RoundRectangle CornerRadius="6" />
+                                                    </Border.StrokeShape>
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExtratoViewModel}}, Path=AlternarStatusPagamentoCommand}"
+                                                                             CommandParameter="{Binding .}" />
+                                                    </Border.GestureRecognizers>
+                                                    <Label Text="{Binding StatusPagamentoTexto}"
+                                                           TextColor="{Binding StatusPagamentoCor}"
+                                                           FontSize="10"
+                                                           FontAttributes="Bold" />
+                                                </Border>
+                                            </HorizontalStackLayout>
 
                                             <!-- Descrição -->
                                             <Label Grid.Column="1"
@@ -282,6 +357,12 @@
                             <Label Grid.Column="1" Text="Despesa recorrente" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
                         </Grid>
                         <Label Text="Ative caso essa despesa se repete todo mês" FontSize="12" TextColor="#6B7280" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout IsVisible="{Binding IsEditPagaVisible}" Spacing="4">
+                        <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Switch IsToggled="{Binding EditPaga}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Despesa já paga" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
+                        </Grid>
                     </VerticalStackLayout>
                     <DatePicker IsVisible="{Binding IsEditVencimentoVisible}" Date="{Binding EditVencimento}" />
 

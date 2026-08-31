@@ -1,4 +1,4 @@
-﻿namespace ManyControl.Models;
+namespace ManyControl.Models;
 
 public class Despesa
 {
@@ -17,6 +17,10 @@ public class Despesa
     public Categoria? Categoria { get; set; }
 
     public bool Recorrente { get; set; }
+ 
+    public bool Paga { get; set; }
+
+    public DateTime? DataPagamento { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

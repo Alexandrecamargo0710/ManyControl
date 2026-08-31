@@ -47,32 +47,81 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
-                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#1F2937" Grid.Row="0" Grid.Column="0">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="Saldo" TextColor="White" FontSize="14" />
-                            <Label Text="{Binding Saldo, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="28" FontAttributes="Bold" />
+                <!-- Seletor de Mês do Início -->
+                <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#111827" Padding="12">
+                    <VerticalStackLayout Spacing="8">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                            <Button Grid.Column="0"
+                                    Text="◀"
+                                    WidthRequest="44" HeightRequest="44" Padding="0" CornerRadius="10"
+                                    BackgroundColor="#374151" TextColor="White" FontSize="16"
+                                    Command="{Binding MesAnteriorCommand}" />
+
+                            <Label Grid.Column="1"
+                                   Text="{Binding MesAnoTexto}"
+                                   TextColor="White"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   LineBreakMode="NoWrap" />
+
+                            <Button Grid.Column="2"
+                                    Text="▶"
+                                    WidthRequest="44" HeightRequest="44" Padding="0" CornerRadius="10"
+                                    BackgroundColor="#374151" TextColor="White" FontSize="16"
+                                    Command="{Binding ProximoMesCommand}" />
+                        </Grid>
+
+                        <Button Text="Ir para o mês atual"
+                                HeightRequest="32" Padding="14,0" FontSize="12" CornerRadius="8"
+                                BackgroundColor="#1F2937" TextColor="#9CA3AF"
+                                HorizontalOptions="Center"
+                                Command="{Binding MesAtualCommand}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Resumo Financeiro do Mês & Saldo Geral -->
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#1F2937" Grid.Row="0" Grid.Column="0" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Balanço do Mês" TextColor="#9CA3AF" FontSize="12" />
+                            <Label Text="{Binding BalancoMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="20" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#0F766E" Grid.Row="0" Grid.Column="1">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="Receitas" TextColor="White" FontSize="14" />
-                            <Label Text="{Binding TotalReceitas, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="28" FontAttributes="Bold" />
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#1E1B4B" Grid.Row="0" Grid.Column="1" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Saldo Geral (Conta)" TextColor="#A5B4FC" FontSize="12" />
+                            <Label Text="{Binding Saldo, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="20" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#7C2D12" Grid.Row="1" Grid.Column="0">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="Despesas" TextColor="White" FontSize="14" />
-                            <Label Text="{Binding TotalDespesas, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="28" FontAttributes="Bold" />
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#065F46" Grid.Row="1" Grid.Column="0" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Receitas do Mês" TextColor="#D1FAE5" FontSize="12" />
+                            <Label Text="{Binding ReceitasMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="20" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#4338CA" Grid.Row="1" Grid.Column="1">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="Categorias" TextColor="White" FontSize="14" />
-                            <Label Text="{Binding TotalCategorias}" TextColor="White" FontSize="28" FontAttributes="Bold" />
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#991B1B" Grid.Row="1" Grid.Column="1" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Despesas do Mês" TextColor="#FEE2E2" FontSize="12" />
+                            <Label Text="{Binding DespesasMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#451A03" Grid.Row="2" Grid.Column="0" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="A Pagar (Pendente)" TextColor="#FDE68A" FontSize="12" />
+                            <Label Text="{Binding DespesasPendentesMes, StringFormat='R$ {0:N2}'}" TextColor="#FBBF24" FontSize="18" FontAttributes="Bold" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#064E3B" Grid.Row="2" Grid.Column="1" Padding="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Já Pago" TextColor="#A7F3D0" FontSize="12" />
+                            <Label Text="{Binding DespesasPagasMes, StringFormat='R$ {0:N2}'}" TextColor="#34D399" FontSize="18" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
                 </Grid>
@@ -104,6 +153,13 @@
                             </Grid>
                             <Label Text="Ative caso essa despesa se repete todo mês" FontSize="12" TextColor="#6B7280" />
                         </VerticalStackLayout>
+                        <VerticalStackLayout Spacing="4">
+                            <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
+                                <Switch IsToggled="{Binding DespesaPaga}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="Despesa já paga" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
+                            </Grid>
+                            <Label Text="Marque se esta conta já foi quitada" FontSize="12" TextColor="#6B7280" />
+                        </VerticalStackLayout>
                         <HorizontalStackLayout Spacing="12">
                             <Button Text="Salvar despesa" Command="{Binding SalvarDespesaCommand}" />
                             <Button Text="Cancelar" Command="{Binding CancelarDespesaCommand}" />
@@ -113,18 +169,55 @@
 
                 <VerticalStackLayout Spacing="16">
                     <VerticalStackLayout Spacing="8">
-                        <Label Text="Despesas recentes" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="Despesas do mês" FontSize="18" FontAttributes="Bold" />
                         <CollectionView ItemsSource="{Binding DespesasRecentes}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="models:Despesa">
                                     <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,8" Padding="14,10" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}">
                                         <VerticalStackLayout Spacing="6">
-                                            <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                                                <Label Text="{Binding Descricao}" FontAttributes="Bold" FontSize="15" LineBreakMode="TailTruncation" VerticalOptions="Center" />
-                                                <Label Grid.Column="1" Text="{Binding Valor, StringFormat='- R$ {0:N2}'}" TextColor="#F87171" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
+                                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                                                <!-- Badge Interativo de Status Paga/Pendente -->
+                                                <Border Grid.Column="0"
+                                                        StrokeThickness="0"
+                                                        Padding="8,3"
+                                                        VerticalOptions="Center">
+                                                    <Border.StrokeShape>
+                                                        <RoundRectangle CornerRadius="6" />
+                                                    </Border.StrokeShape>
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding Paga}" Value="True">
+                                                            <Setter Property="BackgroundColor" Value="#064E3B" />
+                                                        </DataTrigger>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding Paga}" Value="False">
+                                                            <Setter Property="BackgroundColor" Value="#451A03" />
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=AlternarStatusPagamentoCommand}"
+                                                                             CommandParameter="{Binding .}" />
+                                                    </Border.GestureRecognizers>
+                                                    <Label FontSize="10" FontAttributes="Bold" VerticalOptions="Center">
+                                                        <Label.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding Paga}" Value="True">
+                                                                <Setter Property="Text" Value="✓ PAGA" />
+                                                                <Setter Property="TextColor" Value="#34D399" />
+                                                            </DataTrigger>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding Paga}" Value="False">
+                                                                <Setter Property="Text" Value="⏳ PENDENTE" />
+                                                                <Setter Property="TextColor" Value="#FBBF24" />
+                                                            </DataTrigger>
+                                                        </Label.Triggers>
+                                                    </Label>
+                                                </Border>
+
+                                                <Label Grid.Column="1" Text="{Binding Descricao}" FontAttributes="Bold" FontSize="15" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                                <Label Grid.Column="2" Text="{Binding Valor, StringFormat='- R$ {0:N2}'}" TextColor="#F87171" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
                                             </Grid>
                                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                                                <Label Text="{Binding Vencimento, StringFormat='Venc.: {0:dd/MM/yyyy}'}" FontSize="12" TextColor="#9CA3AF" VerticalOptions="Center" />
+                                                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                                    <Label Text="{Binding Vencimento, StringFormat='Venc.: {0:dd/MM/yyyy}'}" FontSize="12" TextColor="#9CA3AF" VerticalOptions="Center" />
+                                                    <Label Text="• Recorrente" FontSize="11" TextColor="#A78BFA" IsVisible="{Binding Recorrente}" VerticalOptions="Center" />
+                                                </HorizontalStackLayout>
                                                 <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                                                     <Button Text="Editar" HeightRequest="30" Padding="12,0" FontSize="11" CornerRadius="6"
                                                             BackgroundColor="#2563EB" TextColor="White"
@@ -144,7 +237,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="8">
-                        <Label Text="Receitas recentes" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="Receitas do mês" FontSize="18" FontAttributes="Bold" />
                         <CollectionView ItemsSource="{Binding ReceitasRecentes}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="models:Receita">
@@ -196,6 +289,12 @@
                             <Label Grid.Column="1" Text="Despesa recorrente" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
                         </Grid>
                         <Label Text="Ative caso essa despesa se repete todo mês" FontSize="12" TextColor="#6B7280" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout IsVisible="{Binding IsEditPagaVisible}" Spacing="4">
+                        <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Switch IsToggled="{Binding EditPaga}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Despesa já paga" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
+                        </Grid>
                     </VerticalStackLayout>
                     <DatePicker IsVisible="{Binding IsEditVencimentoVisible}" Date="{Binding EditVencimento}" />
 
