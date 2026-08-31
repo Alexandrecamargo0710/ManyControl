@@ -14,16 +14,22 @@ namespace ManyControl.Services;
 /// </summary>
 public class WindowsOAuthReceiver : ICodeReceiver
 {
-    private string _redirectUri = string.Empty;
+    private readonly string _redirectUri;
+    private readonly int _port;
 
     public string RedirectUri => _redirectUri;
+
+    public WindowsOAuthReceiver()
+    {
+        _port = GetRandomUnusedPort();
+        _redirectUri = $"http://127.0.0.1:{_port}/authorize/";
+    }
 
     public async Task<AuthorizationCodeResponseUrl> ReceiveCodeAsync(
         AuthorizationCodeRequestUrl url,
         CancellationToken taskCancellationToken)
     {
-        var port = GetRandomUnusedPort();
-        _redirectUri = $"http://127.0.0.1:{port}/authorize/";
+        url.RedirectUri = _redirectUri;
 
         using var listener = new HttpListener();
         listener.Prefixes.Add(_redirectUri);
@@ -34,7 +40,7 @@ public class WindowsOAuthReceiver : ICodeReceiver
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Não foi possível iniciar o receptor de autenticação na porta {port}: {ex.Message}", ex);
+            throw new InvalidOperationException($"Não foi possível iniciar o receptor de autenticação na porta {_port}: {ex.Message}", ex);
         }
 
         var authUri = ForceAccountSelection(url.Build());
