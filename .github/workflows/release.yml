@@ -40,11 +40,41 @@ jobs:
         run: |
           choco install innosetup --no-progress
 
-      - name: Preparar GoogleSecrets
+      - name: Preparar GoogleSecrets e Credenciais
         shell: pwsh
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
-          if (!(Test-Path "ManyControl/GoogleSecrets.cs")) {
-            Copy-Item "ManyControl/GoogleSecrets.example.cs" -Destination "ManyControl/GoogleSecrets.cs"
+          $clientId = $env:GOOGLE_CLIENT_ID
+          $clientSecret = $env:GOOGLE_CLIENT_SECRET
+          if ($clientId -and $clientSecret) {
+            $code = @"
+namespace ManyControl;
+
+public static partial class GoogleSecrets
+{
+    public const string DefaultClientId = "$clientId";
+    public const string DefaultClientSecret = "$clientSecret";
+}
+"@
+            Set-Content -Path "ManyControl/GoogleSecrets.cs" -Value $code -Encoding UTF8
+            Write-Host "GoogleSecrets.cs configurado com os segredos do repositório."
+
+            $prefix = $clientId.Replace(".apps.googleusercontent.com", "").Trim()
+            if ($prefix) {
+              $callbackFile = "ManyControl/Platforms/Android/WebAuthenticationCallbackActivity.cs"
+              if (Test-Path $callbackFile) {
+                $content = Get-Content $callbackFile -Raw
+                $content = [System.Text.RegularExpressions.Regex]::Replace($content, 'com\.googleusercontent\.apps\.[^"]+', "com.googleusercontent.apps.$prefix")
+                Set-Content -Path $callbackFile -Value $content -Encoding UTF8
+                Write-Host "Android Callback atualizado com o esquema: com.googleusercontent.apps.$prefix"
+              }
+            }
+          } else {
+            if (!(Test-Path "ManyControl/GoogleSecrets.cs")) {
+              Copy-Item "ManyControl/GoogleSecrets.example.cs" -Destination "ManyControl/GoogleSecrets.cs"
+            }
           }
           New-Item -ItemType Directory -Path "dist" -Force | Out-Null
 
