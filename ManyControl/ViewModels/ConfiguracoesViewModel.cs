@@ -85,6 +85,11 @@ public partial class ConfiguracoesViewModel : ObservableObject
     [RelayCommand]
     public async Task ConectarGoogleAsync()
     {
+        if (IsSyncing)
+        {
+            return;
+        }
+
         IsSyncing = true;
         SyncStatusText = "Abrindo login do Google no navegador...";
         try

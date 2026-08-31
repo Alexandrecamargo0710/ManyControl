@@ -204,7 +204,7 @@ public class GoogleDriveService
 #if ANDROID
         codeReceiver = new MauiAndroidCodeReceiver(GetClientId());
 #else
-        codeReceiver = new LocalServerCodeReceiver();
+        codeReceiver = new WindowsOAuthReceiver();
 #endif
 
         var credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
