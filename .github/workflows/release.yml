@@ -49,15 +49,7 @@ jobs:
           $clientId = $env:GOOGLE_CLIENT_ID
           $clientSecret = $env:GOOGLE_CLIENT_SECRET
           if ($clientId -and $clientSecret) {
-            $code = @"
-namespace ManyControl;
-
-public static partial class GoogleSecrets
-{
-    public const string DefaultClientId = "$clientId";
-    public const string DefaultClientSecret = "$clientSecret";
-}
-"@
+            $code = "namespace ManyControl;`r`n`r`npublic static partial class GoogleSecrets`r`n{`r`n    public const string DefaultClientId = `"$clientId`";`r`n    public const string DefaultClientSecret = `"$clientSecret`";`r`n}`r`n"
             Set-Content -Path "ManyControl/GoogleSecrets.cs" -Value $code -Encoding UTF8
             Write-Host "GoogleSecrets.cs configurado com os segredos do repositório."
 
