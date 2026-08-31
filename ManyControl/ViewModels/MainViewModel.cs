@@ -41,6 +41,9 @@ public partial class MainViewModel : ObservableObject
     public partial bool IsMesAtual { get; set; } = true;
 
     [ObservableProperty]
+    public partial bool IsMesDiferenteDoAtual { get; set; }
+
+    [ObservableProperty]
     public partial decimal ReceitasMes { get; set; }
 
     [ObservableProperty]
@@ -226,10 +229,65 @@ public partial class MainViewModel : ObservableObject
         await CarregarDadosAsync();
     }
 
+    [RelayCommand]
+    public async Task ExplicarMetricaAsync(string? metrica)
+    {
+        switch (metrica?.ToLowerInvariant())
+        {
+            case "balanco":
+                await _dialogService.ShowAlertAsync(
+                    "Balanço do Mês",
+                    "É o que sobrou (ou faltou) exclusivamente neste mês selecionado.\n\n" +
+                    "• Fórmula: Receitas do Mês − Despesas do Mês\n\n" +
+                    "Mostra se as suas contas fecharam no positivo ou negativo no período.",
+                    "Entendi");
+                break;
+
+            case "saldo":
+                await _dialogService.ShowAlertAsync(
+                    "Saldo Geral (Conta / Total)",
+                    "É o dinheiro total acumulado na sua conta/carteira desde o início do uso do app.\n\n" +
+                    "• Fórmula: Todas as Receitas de sempre − Todas as Despesas de sempre\n\n" +
+                    "Representa o seu saldo real consolidado.",
+                    "Entendi");
+                break;
+
+            case "receitas":
+                await _dialogService.ShowAlertAsync(
+                    "Receitas do Mês",
+                    "Soma bruta de todas as entradas financeiras (salários, vendas, etc.) registradas no mês selecionado.",
+                    "Entendi");
+                break;
+
+            case "despesas":
+                await _dialogService.ShowAlertAsync(
+                    "Despesas do Mês",
+                    "Soma de todas as contas e gastos registrados para o mês selecionado.",
+                    "Entendi");
+                break;
+
+            case "pendentes":
+                await _dialogService.ShowAlertAsync(
+                    "A Pagar (Pendente)",
+                    "Total de despesas deste mês que ainda NÃO foram pagas.\n\n" +
+                    "Toque no badge '⏳ PENDENTE' de uma despesa para marcá-la como paga assim que quitar a conta.",
+                    "Entendi");
+                break;
+
+            case "pagas":
+                await _dialogService.ShowAlertAsync(
+                    "Já Pago",
+                    "Total de despesas deste mês que já foram quitadas e marcadas como '✓ PAGA'.",
+                    "Entendi");
+                break;
+        }
+    }
+
     private void AtualizarTextoMes()
     {
         var hoje = DateTime.Today;
         IsMesAtual = DataReferencia.Year == hoje.Year && DataReferencia.Month == hoje.Month;
+        IsMesDiferenteDoAtual = !IsMesAtual;
 
         var nomeMes = DataReferencia.ToString("MMMM", PtBr);
         if (!string.IsNullOrEmpty(nomeMes))

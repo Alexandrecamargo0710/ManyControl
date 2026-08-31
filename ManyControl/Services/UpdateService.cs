@@ -170,7 +170,8 @@ public class UpdateService
         };
 
         Process.Start(startInfo);
-        Application.Current?.Quit();
+        // Força o encerramento imediato deste processo para que o instalador substitua os binários e abra a nova versão de forma limpa
+        Environment.Exit(0);
 #elif ANDROID
         var context = Android.App.Application.Context;
         var javaFile = new Java.IO.File(downloadedFilePath);

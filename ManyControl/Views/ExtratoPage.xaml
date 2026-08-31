@@ -28,33 +28,30 @@
                 <!-- Barra de Navegação de Mês Responsiva -->
                 <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#111827" Padding="12">
                     <VerticalStackLayout Spacing="8">
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
-                            <Button Grid.Column="0"
-                                    Text="◀"
-                                    WidthRequest="44" HeightRequest="44" Padding="0" CornerRadius="10"
-                                    BackgroundColor="#374151" TextColor="White" FontSize="16"
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="16" VerticalOptions="Center">
+                            <Button Text="◀"
+                                    WidthRequest="40" HeightRequest="40" Padding="0" CornerRadius="10"
+                                    BackgroundColor="#374151" TextColor="White" FontSize="15"
                                     Command="{Binding MesAnteriorCommand}" />
 
-                            <Label Grid.Column="1"
-                                   Text="{Binding MesAnoTexto}"
+                            <Label Text="{Binding MesAnoTexto}"
                                    TextColor="White"
                                    FontSize="18"
                                    FontAttributes="Bold"
-                                   HorizontalOptions="Center"
                                    VerticalOptions="Center"
                                    LineBreakMode="NoWrap" />
 
-                            <Button Grid.Column="2"
-                                    Text="▶"
-                                    WidthRequest="44" HeightRequest="44" Padding="0" CornerRadius="10"
-                                    BackgroundColor="#374151" TextColor="White" FontSize="16"
+                            <Button Text="▶"
+                                    WidthRequest="40" HeightRequest="40" Padding="0" CornerRadius="10"
+                                    BackgroundColor="#374151" TextColor="White" FontSize="15"
                                     Command="{Binding ProximoMesCommand}" />
-                        </Grid>
+                        </HorizontalStackLayout>
 
                         <Button Text="Ir para o mês atual"
-                                HeightRequest="34" Padding="14,0" FontSize="12" CornerRadius="8"
+                                HeightRequest="32" Padding="14,0" FontSize="12" CornerRadius="8"
                                 BackgroundColor="#1F2937" TextColor="#9CA3AF"
                                 HorizontalOptions="Center"
+                                IsVisible="{Binding IsMesDiferenteDoAtual}"
                                 Command="{Binding MesAtualCommand}" />
                     </VerticalStackLayout>
                 </Border>
@@ -63,35 +60,70 @@
                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
                     <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#065F46" Grid.Row="0" Grid.Column="0" Padding="12">
                         <VerticalStackLayout Spacing="2">
-                            <Label Text="Entradas do Mês" TextColor="#D1FAE5" FontSize="12" />
+                            <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                <Label Text="Entradas do Mês" TextColor="#D1FAE5" FontSize="12" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="ⓘ" TextColor="#D1FAE5" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="receitas" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </Grid>
                             <Label Text="{Binding TotalReceitasMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="18" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#991B1B" Grid.Row="0" Grid.Column="1" Padding="12">
                         <VerticalStackLayout Spacing="2">
-                            <Label Text="Saídas do Mês" TextColor="#FEE2E2" FontSize="12" />
+                            <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                <Label Text="Saídas do Mês" TextColor="#FEE2E2" FontSize="12" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="ⓘ" TextColor="#FEE2E2" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="despesas" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </Grid>
                             <Label Text="{Binding TotalDespesasMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="18" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#451A03" Grid.Row="1" Grid.Column="0" Padding="12">
                         <VerticalStackLayout Spacing="2">
-                            <Label Text="A Pagar (Pendente)" TextColor="#FDE68A" FontSize="12" />
+                            <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                <Label Text="A Pagar (Pendente)" TextColor="#FDE68A" FontSize="12" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="ⓘ" TextColor="#FDE68A" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="pendentes" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </Grid>
                             <Label Text="{Binding TotalDespesasPendentesMes, StringFormat='R$ {0:N2}'}" TextColor="#FBBF24" FontSize="16" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#064E3B" Grid.Row="1" Grid.Column="1" Padding="12">
                         <VerticalStackLayout Spacing="2">
-                            <Label Text="Já Pago" TextColor="#A7F3D0" FontSize="12" />
+                            <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                <Label Text="Já Pago" TextColor="#A7F3D0" FontSize="12" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="ⓘ" TextColor="#A7F3D0" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="pagas" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </Grid>
                             <Label Text="{Binding TotalDespesasPagasMes, StringFormat='R$ {0:N2}'}" TextColor="#34D399" FontSize="16" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
                     <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#1F2937" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Padding="12">
                         <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                            <Label Text="Balanço do Mês" TextColor="#E5E7EB" FontSize="13" VerticalOptions="Center" />
+                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                <Label Text="Balanço do Mês" TextColor="#E5E7EB" FontSize="13" VerticalOptions="Center" />
+                                <Label Text="ⓘ" TextColor="#9CA3AF" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="4,0">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="balanco" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </HorizontalStackLayout>
                             <Label Grid.Column="1" Text="{Binding SaldoMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="20" FontAttributes="Bold" VerticalOptions="Center" />
                         </Grid>
                     </Border>
