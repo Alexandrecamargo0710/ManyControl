@@ -95,6 +95,12 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     public partial DateTime ReceitaData { get; set; } = DateTime.Today;
 
+    [ObservableProperty]
+    public partial bool ReceitaRecebida { get; set; } = true;
+
+    [ObservableProperty]
+    public partial decimal TotalReceitasPendentes { get; set; }
+
     // Formulário Nova Despesa
     [ObservableProperty]
     public partial string DespesaDescricao { get; set; } = string.Empty;
@@ -148,6 +154,12 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsEditPagaVisible { get; set; }
 
+    [ObservableProperty]
+    public partial bool EditReceitaRecebida { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool IsEditReceitaRecebidaVisible { get; set; }
+
     private Guid? _editingReceitaId;
     private Guid? _editingDespesaId;
     private EditMode _currentEditMode = EditMode.None;
@@ -177,6 +189,7 @@ public partial class MainViewModel : ObservableObject
 
         Saldo = await _financeService.GetSaldoAsync();
         TotalReceitas = await _financeService.GetTotalReceitasAsync();
+        TotalReceitasPendentes = await _financeService.GetTotalReceitasPendentesAsync();
         TotalDespesas = await _financeService.GetTotalDespesasAsync();
         TotalCategorias = categorias.Count;
 
@@ -324,7 +337,8 @@ public partial class MainViewModel : ObservableObject
             ReceitaDescricao.Trim(),
             valor,
             ReceitaData,
-            null);
+            null,
+            ReceitaRecebida);
 
         LimparFormularioReceita();
         await CarregarDadosAsync();
@@ -460,6 +474,18 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    public async Task AlternarRecebimentoReceitaAsync(Receita? receita)
+    {
+        if (receita is null)
+        {
+            return;
+        }
+
+        await _financeService.MarcarReceitaComoRecebidaAsync(receita.Id, !receita.Recebida);
+        await CarregarDadosAsync();
+    }
+
+    [RelayCommand]
     public void EditarReceita(Receita? receita)
     {
         if (receita is null)
@@ -468,7 +494,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         _editingReceitaId = receita.Id;
-        OpenEditModal(EditMode.Receita, receita.Descricao, receita.Valor, receita.Data, false, false, null);
+        OpenEditModal(EditMode.Receita, receita.Descricao, receita.Valor, receita.Data, false, false, null, receita.Recebida);
     }
 
     [RelayCommand]
@@ -551,7 +577,8 @@ public partial class MainViewModel : ObservableObject
                 EditDescricao.Trim(),
                 valor,
                 EditData,
-                null);
+                null,
+                EditReceitaRecebida);
         }
         else if (_currentEditMode == EditMode.Despesa && _editingDespesaId.HasValue)
         {
@@ -589,12 +616,13 @@ public partial class MainViewModel : ObservableObject
         EditRecorrente = false;
         EditPaga = false;
         EditVencimento = DateTime.Today;
+        EditReceitaRecebida = true;
         IsEditRecorrenteVisible = false;
-        IsEditVencimentoVisible = false;
         IsEditPagaVisible = false;
+        IsEditReceitaRecebidaVisible = false;
     }
 
-    private void OpenEditModal(EditMode mode, string descricao, decimal valor, DateTime data, bool recorrente, bool paga, DateTime? vencimento)
+    private void OpenEditModal(EditMode mode, string descricao, decimal valor, DateTime data, bool recorrente, bool paga, DateTime? vencimento, bool recebida = true)
     {
         _currentEditMode = mode;
         IsEditModalVisible = true;
@@ -605,6 +633,8 @@ public partial class MainViewModel : ObservableObject
             IsEditRecorrenteVisible = false;
             IsEditVencimentoVisible = false;
             IsEditPagaVisible = false;
+            IsEditReceitaRecebidaVisible = true;
+            EditReceitaRecebida = recebida;
         }
         else
         {
@@ -612,6 +642,8 @@ public partial class MainViewModel : ObservableObject
             IsEditRecorrenteVisible = true;
             IsEditVencimentoVisible = true;
             IsEditPagaVisible = true;
+            IsEditReceitaRecebidaVisible = false;
+            EditReceitaRecebida = true;
         }
 
         EditDescricao = descricao;
@@ -627,6 +659,7 @@ public partial class MainViewModel : ObservableObject
         ReceitaDescricao = string.Empty;
         ReceitaValor = string.Empty;
         ReceitaData = DateTime.Today;
+        ReceitaRecebida = true;
     }
 
     private void LimparFormularioDespesa()

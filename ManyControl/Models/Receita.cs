@@ -1,4 +1,4 @@
-﻿namespace ManyControl.Models;
+namespace ManyControl.Models;
 
 public class Receita
 {
@@ -13,6 +13,8 @@ public class Receita
     public Guid? CategoriaId { get; set; }
 
     public Categoria? Categoria { get; set; }
+
+    public bool Recebida { get; set; } = true;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

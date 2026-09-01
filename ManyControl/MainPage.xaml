@@ -171,6 +171,13 @@
                         <Entry Text="{Binding ReceitaDescricao}" Placeholder="Descrição" />
                         <Entry Text="{Binding ReceitaValor}" Placeholder="Valor" Keyboard="Numeric" />
                         <DatePicker Date="{Binding ReceitaData}" />
+                        <VerticalStackLayout Spacing="4">
+                            <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
+                                <Switch IsToggled="{Binding ReceitaRecebida}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="Já recebi esta receita" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
+                            </Grid>
+                            <Label Text="Desmarque caso seja um recebimento futuro (não afetará o saldo até ser recebida)" FontSize="12" TextColor="#6B7280" />
+                        </VerticalStackLayout>
                         <HorizontalStackLayout Spacing="12">
                             <Button Text="Salvar receita" Command="{Binding SalvarReceitaCommand}" />
                             <Button Text="Cancelar" Command="{Binding CancelarReceitaCommand}" />
@@ -283,12 +290,43 @@
                                     <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,8" Padding="14,10" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}">
                                         <VerticalStackLayout Spacing="6">
                                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                                                <Label Text="{Binding Descricao}" FontAttributes="Bold" FontSize="15" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                                    <Border StrokeThickness="0" Padding="6,2" VerticalOptions="Center">
+                                                        <Border.StrokeShape>
+                                                            <RoundRectangle CornerRadius="6" />
+                                                        </Border.StrokeShape>
+                                                        <Border.Triggers>
+                                                            <DataTrigger TargetType="Border" Binding="{Binding Recebida}" Value="True">
+                                                                <Setter Property="BackgroundColor" Value="#064E3B" />
+                                                            </DataTrigger>
+                                                            <DataTrigger TargetType="Border" Binding="{Binding Recebida}" Value="False">
+                                                                <Setter Property="BackgroundColor" Value="#78350F" />
+                                                            </DataTrigger>
+                                                        </Border.Triggers>
+                                                        <Label FontSize="10" FontAttributes="Bold" VerticalOptions="Center">
+                                                            <Label.Triggers>
+                                                                <DataTrigger TargetType="Label" Binding="{Binding Recebida}" Value="True">
+                                                                    <Setter Property="Text" Value="✓ RECEBIDO" />
+                                                                    <Setter Property="TextColor" Value="#34D399" />
+                                                                </DataTrigger>
+                                                                <DataTrigger TargetType="Label" Binding="{Binding Recebida}" Value="False">
+                                                                    <Setter Property="Text" Value="⏳ A RECEBER" />
+                                                                    <Setter Property="TextColor" Value="#FBBF24" />
+                                                                </DataTrigger>
+                                                            </Label.Triggers>
+                                                        </Label>
+                                                    </Border>
+                                                    <Label Text="{Binding Descricao}" FontAttributes="Bold" FontSize="15" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                                </HorizontalStackLayout>
                                                 <Label Grid.Column="1" Text="{Binding Valor, StringFormat='+ R$ {0:N2}'}" TextColor="#34D399" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
                                             </Grid>
                                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
                                                 <Label Text="{Binding Data, StringFormat='{0:dd/MM/yyyy}'}" FontSize="12" TextColor="#9CA3AF" VerticalOptions="Center" />
                                                 <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                                    <Button Text="Alternar" HeightRequest="30" Padding="10,0" FontSize="11" CornerRadius="6"
+                                                            BackgroundColor="#059669" TextColor="White"
+                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=AlternarRecebimentoReceitaCommand}"
+                                                            CommandParameter="{Binding .}" />
                                                     <Button Text="Editar" HeightRequest="30" Padding="12,0" FontSize="11" CornerRadius="6"
                                                             BackgroundColor="#2563EB" TextColor="White"
                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=EditarReceitaCommand}"
@@ -321,6 +359,14 @@
                     <Entry Text="{Binding EditDescricao}" Placeholder="Descrição" />
                     <Entry Text="{Binding EditValor}" Placeholder="Valor" Keyboard="Numeric" />
                     <DatePicker Date="{Binding EditData}" />
+
+                    <VerticalStackLayout IsVisible="{Binding IsEditReceitaRecebidaVisible}" Spacing="4">
+                        <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Switch IsToggled="{Binding EditReceitaRecebida}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Já recebi esta receita" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
+                        </Grid>
+                        <Label Text="Desmarque caso seja um recebimento futuro" FontSize="12" TextColor="#6B7280" />
+                    </VerticalStackLayout>
 
                     <VerticalStackLayout IsVisible="{Binding IsEditRecorrenteVisible}" Spacing="4">
                         <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">

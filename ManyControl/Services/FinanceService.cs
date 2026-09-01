@@ -81,7 +81,16 @@ public class FinanceService
         await using var context = await _contextFactory.CreateDbContextAsync();
 
         return await context.Receitas
-            .Where(r => r.DeletedAt == null && r.Data.Year == ano && r.Data.Month == mes)
+            .Where(r => r.DeletedAt == null && r.Recebida && r.Data.Year == ano && r.Data.Month == mes)
+            .SumAsync(r => (decimal?)r.Valor) ?? 0m;
+    }
+
+    public async Task<decimal> GetTotalReceitasPendentesPorMesAsync(int ano, int mes)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+
+        return await context.Receitas
+            .Where(r => r.DeletedAt == null && !r.Recebida && r.Data.Year == ano && r.Data.Month == mes)
             .SumAsync(r => (decimal?)r.Valor) ?? 0m;
     }
 
@@ -206,7 +215,16 @@ public class FinanceService
         await using var context = await _contextFactory.CreateDbContextAsync();
 
         return await context.Receitas
-            .Where(r => r.DeletedAt == null)
+            .Where(r => r.DeletedAt == null && r.Recebida)
+            .SumAsync(r => (decimal?)r.Valor) ?? 0m;
+    }
+
+    public async Task<decimal> GetTotalReceitasPendentesAsync()
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+
+        return await context.Receitas
+            .Where(r => r.DeletedAt == null && !r.Recebida)
             .SumAsync(r => (decimal?)r.Valor) ?? 0m;
     }
 
@@ -242,7 +260,7 @@ public class FinanceService
         await using var context = await _contextFactory.CreateDbContextAsync();
 
         var receitas = await context.Receitas
-            .Where(r => r.DeletedAt == null)
+            .Where(r => r.DeletedAt == null && r.Recebida)
             .SumAsync(r => (decimal?)r.Valor) ?? 0m;
 
         var despesas = await context.Despesas
@@ -296,7 +314,7 @@ public class FinanceService
         return categoria;
     }
 
-    public async Task AddReceitaAsync(string descricao, decimal valor, DateTime data, Guid? categoriaId)
+    public async Task AddReceitaAsync(string descricao, decimal valor, DateTime data, Guid? categoriaId, bool recebida = true)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
@@ -307,6 +325,7 @@ public class FinanceService
             Valor = valor,
             Data = data,
             CategoriaId = categoriaId,
+            Recebida = recebida,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         });
@@ -314,7 +333,7 @@ public class FinanceService
         await context.SaveChangesAsync();
     }
 
-    public async Task UpdateReceitaAsync(Guid id, string descricao, decimal valor, DateTime data, Guid? categoriaId)
+    public async Task UpdateReceitaAsync(Guid id, string descricao, decimal valor, DateTime data, Guid? categoriaId, bool recebida)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
@@ -328,6 +347,23 @@ public class FinanceService
         receita.Valor = valor;
         receita.Data = data;
         receita.CategoriaId = categoriaId;
+        receita.Recebida = recebida;
+        receita.UpdatedAt = DateTime.UtcNow;
+
+        await context.SaveChangesAsync();
+    }
+
+    public async Task MarcarReceitaComoRecebidaAsync(Guid id, bool recebida)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+
+        var receita = await context.Receitas.FirstOrDefaultAsync(r => r.Id == id && r.DeletedAt == null);
+        if (receita is null)
+        {
+            return;
+        }
+
+        receita.Recebida = recebida;
         receita.UpdatedAt = DateTime.UtcNow;
 
         await context.SaveChangesAsync();

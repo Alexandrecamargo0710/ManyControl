@@ -339,6 +339,16 @@
                                             </HorizontalStackLayout>
 
                                             <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                                <Button Text="Alternar"
+                                                        HeightRequest="30"
+                                                        Padding="10,0"
+                                                        FontSize="11"
+                                                        CornerRadius="6"
+                                                        BackgroundColor="#059669"
+                                                        TextColor="White"
+                                                        IsVisible="{Binding IsReceita}"
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ExtratoViewModel}}, Path=AlternarRecebimentoCommand}"
+                                                        CommandParameter="{Binding .}" />
                                                 <Button Text="Editar"
                                                         HeightRequest="30"
                                                         Padding="12,0"
@@ -382,6 +392,14 @@
                     <Entry Text="{Binding EditDescricao}" Placeholder="Descrição" />
                     <Entry Text="{Binding EditValor}" Placeholder="Valor" Keyboard="Numeric" />
                     <DatePicker Date="{Binding EditData}" />
+
+                    <VerticalStackLayout IsVisible="{Binding IsEditReceitaRecebidaVisible}" Spacing="4">
+                        <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
+                            <Switch IsToggled="{Binding EditReceitaRecebida}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="Já recebi esta receita" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
+                        </Grid>
+                        <Label Text="Desmarque caso seja um recebimento futuro" FontSize="12" TextColor="#6B7280" />
+                    </VerticalStackLayout>
 
                     <VerticalStackLayout IsVisible="{Binding IsEditRecorrenteVisible}" Spacing="4">
                         <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">

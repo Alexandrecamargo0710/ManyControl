@@ -86,6 +86,7 @@ public class DatabaseService
         await TryExecuteAsync(context, "ALTER TABLE Categorias ADD COLUMN DeletedAt TEXT NULL");
         await TryExecuteAsync(context, "ALTER TABLE Receitas ADD COLUMN DeletedAt TEXT NULL");
         await TryExecuteAsync(context, "ALTER TABLE Despesas ADD COLUMN DeletedAt TEXT NULL");
+        await TryExecuteAsync(context, "ALTER TABLE Receitas ADD COLUMN Recebida INTEGER NOT NULL DEFAULT 1");
     }
 
     private static async Task EnsureDespesaPagamentoColumnsAsync(FinanceDbContext context)

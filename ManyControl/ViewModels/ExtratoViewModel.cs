@@ -107,6 +107,15 @@ public partial class ExtratoViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsEditPagaVisible { get; set; }
 
+    [ObservableProperty]
+    public partial bool EditReceitaRecebida { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool IsEditReceitaRecebidaVisible { get; set; }
+
+    [ObservableProperty]
+    public partial decimal TotalReceitasPendentesMes { get; set; }
+
     private Guid? _editingId;
     private string _editingTipo = string.Empty;
 
@@ -134,7 +143,9 @@ public partial class ExtratoViewModel : ObservableObject
             var receitas = await _financeService.GetReceitasPorMesAsync(ano, mes);
             var despesas = await _financeService.GetDespesasPorMesAsync(ano, mes);
 
-            TotalReceitasMes = receitas.Sum(r => r.Valor);
+            var totalReceitasRecebidas = receitas.Where(r => r.Recebida).Sum(r => r.Valor);
+            TotalReceitasPendentesMes = receitas.Where(r => !r.Recebida).Sum(r => r.Valor);
+            TotalReceitasMes = totalReceitasRecebidas;
             TotalDespesasMes = despesas.Sum(d => d.Valor);
             TotalDespesasPagasMes = despesas.Where(d => d.Paga).Sum(d => d.Valor);
             TotalDespesasPendentesMes = despesas.Where(d => !d.Paga).Sum(d => d.Valor);
@@ -173,10 +184,11 @@ public partial class ExtratoViewModel : ObservableObject
                         Vencimento = null,
                         Recorrente = false,
                         Paga = false,
+                        Recebida = r.Recebida,
                         ValorTexto = $"+ {r.Valor.ToString("C", PtBr)}",
-                        ValorCor = "#10B981", // Verde
-                        TipoBadge = "Receita",
-                        TipoBadgeCor = "#064E3B",
+                        ValorCor = r.Recebida ? "#10B981" : "#FBBF24",
+                        TipoBadge = r.Recebida ? "✓ Recebida" : "⏳ A receber",
+                        TipoBadgeCor = r.Recebida ? "#064E3B" : "#78350F",
                         ReceitaOriginal = r
                     });
                 }
@@ -301,6 +313,18 @@ public partial class ExtratoViewModel : ObservableObject
     }
 
     [RelayCommand]
+    public async Task AlternarRecebimentoAsync(TransacaoItemViewModel? item)
+    {
+        if (item is null || item.ReceitaOriginal is null)
+        {
+            return;
+        }
+
+        await _financeService.MarcarReceitaComoRecebidaAsync(item.ReceitaOriginal.Id, !item.ReceitaOriginal.Recebida);
+        await CarregarMesAsync();
+    }
+
+    [RelayCommand]
     public void EditarTransacao(TransacaoItemViewModel? item)
     {
         if (item is null)
@@ -323,6 +347,8 @@ public partial class ExtratoViewModel : ObservableObject
             IsEditVencimentoVisible = false;
             IsEditPagaVisible = false;
             EditPaga = false;
+            IsEditReceitaRecebidaVisible = true;
+            EditReceitaRecebida = item.Recebida;
         }
         else
         {
@@ -330,6 +356,8 @@ public partial class ExtratoViewModel : ObservableObject
             IsEditRecorrenteVisible = true;
             IsEditVencimentoVisible = true;
             IsEditPagaVisible = true;
+            IsEditReceitaRecebidaVisible = false;
+            EditReceitaRecebida = true;
             EditRecorrente = item.Recorrente;
             EditPaga = item.Paga;
             EditVencimento = item.Vencimento ?? item.Data;
@@ -399,7 +427,8 @@ public partial class ExtratoViewModel : ObservableObject
                 EditDescricao.Trim(),
                 valor,
                 EditData,
-                null);
+                null,
+                EditReceitaRecebida);
         }
         else
         {
@@ -431,9 +460,11 @@ public partial class ExtratoViewModel : ObservableObject
         EditRecorrente = false;
         EditPaga = false;
         EditVencimento = DateTime.Today;
+        EditReceitaRecebida = true;
         IsEditRecorrenteVisible = false;
         IsEditVencimentoVisible = false;
         IsEditPagaVisible = false;
+        IsEditReceitaRecebidaVisible = false;
     }
 
     [RelayCommand]
@@ -535,6 +566,8 @@ public class TransacaoItemViewModel
     public string StatusPagamentoCor => Paga ? "#34D399" : "#FBBF24";
     public string StatusPagamentoFundo => Paga ? "#064E3B" : "#451A03";
     public string StatusPagamentoIcone => Paga ? "✓" : "⏳";
+    public bool Recebida { get; set; } = true;
+    public bool IsReceita => Tipo == "Receita";
     public string ValorTexto { get; set; } = string.Empty;
     public string ValorCor { get; set; } = "#FFFFFF";
     public string TipoBadge { get; set; } = string.Empty;

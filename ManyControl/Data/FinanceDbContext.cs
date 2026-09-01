@@ -45,6 +45,9 @@ public class FinanceDbContext : DbContext
                 .HasMaxLength(200);
             entity.Property(e => e.Valor)
                 .HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Recebida)
+                .IsRequired()
+                .HasDefaultValue(true);
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.UpdatedAt).IsRequired();
             entity.Property(e => e.DeletedAt);
