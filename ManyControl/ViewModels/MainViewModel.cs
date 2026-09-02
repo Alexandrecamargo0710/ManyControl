@@ -197,20 +197,18 @@ public partial class MainViewModel : ObservableObject
     {
         AtualizarTextoMes();
 
-        await _financeService.ProcessarDespesasRecorrentesAsync(DateTime.Today);
-
         var ano = DataReferencia.Year;
         var mes = DataReferencia.Month;
 
-        var categorias = await _financeService.GetCategoriasAsync();
-        var receitasDoMes = await _financeService.GetReceitasPorMesAsync(ano, mes);
-        var despesasDoMes = await _financeService.GetDespesasPorMesAsync(ano, mes);
+        var receitasTask = _financeService.GetReceitasPorMesAsync(ano, mes);
+        var despesasTask = _financeService.GetDespesasPorMesAsync(ano, mes);
+        var saldoTask = _financeService.GetSaldoAsync();
 
-        Saldo = await _financeService.GetSaldoAsync();
-        TotalReceitas = await _financeService.GetTotalReceitasAsync();
-        TotalReceitasPendentes = await _financeService.GetTotalReceitasPendentesAsync();
-        TotalDespesas = await _financeService.GetTotalDespesasAsync();
-        TotalCategorias = categorias.Count;
+        await Task.WhenAll(receitasTask, despesasTask, saldoTask);
+
+        var receitasDoMes = await receitasTask;
+        var despesasDoMes = await despesasTask;
+        Saldo = await saldoTask;
 
         var totalReceitasRecebidas = receitasDoMes.Where(r => r.Recebida).Sum(r => r.Valor);
         TotalReceitasPendentes = receitasDoMes.Where(r => !r.Recebida).Sum(r => r.Valor);
@@ -795,14 +793,9 @@ public partial class MainViewModel : ObservableObject
             {
                 await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
-                    var novidades = FormatarNotasAtualizacao(update.ReleaseNotes);
-
                     var confirm = await _dialogService.ShowConfirmationAsync(
-                        $"Nova Versão ({update.TagName}) 🎉",
-                        $"Uma nova versão do ManyControl está disponível!\n\n" +
-                        $"📋 O que mudou nesta versão:\n" +
-                        $"{novidades}\n\n" +
-                        $"Deseja baixar e atualizar agora?",
+                        $"Nova Versão ({update.TagName})",
+                        $"Uma nova versão do ManyControl ({update.TagName}) está disponível para download!\n\nDeseja atualizar agora?",
                         "Atualizar Agora",
                         "Depois");
 

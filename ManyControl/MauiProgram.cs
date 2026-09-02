@@ -37,12 +37,12 @@ public static class MauiProgram
         builder.Services.AddSingleton<ChangelogService>();
 
         builder.Services.AddSingleton<AppShell>();
-        builder.Services.AddTransient<MainViewModel>();
-        builder.Services.AddTransient<MainPage>();
-        builder.Services.AddTransient<ExtratoViewModel>();
-        builder.Services.AddTransient<ExtratoPage>();
-        builder.Services.AddTransient<ConfiguracoesViewModel>();
-        builder.Services.AddTransient<ConfiguracoesPage>();
+        builder.Services.AddSingleton<MainViewModel>();
+        builder.Services.AddSingleton<MainPage>();
+        builder.Services.AddSingleton<ExtratoViewModel>();
+        builder.Services.AddSingleton<ExtratoPage>();
+        builder.Services.AddSingleton<ConfiguracoesViewModel>();
+        builder.Services.AddSingleton<ConfiguracoesPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

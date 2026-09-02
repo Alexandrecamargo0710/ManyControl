@@ -23,6 +23,14 @@ public class DatabaseService
         await using var context = await _contextFactory.CreateDbContextAsync();
 
         await context.Database.EnsureCreatedAsync();
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync("PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;");
+        }
+        catch
+        {
+            // Pragma opcional caso SQLite não suporte em certos ambientes
+        }
         await EnsureDeletedAtColumnsAsync(context);
         await EnsureDespesaPagamentoColumnsAsync(context);
 

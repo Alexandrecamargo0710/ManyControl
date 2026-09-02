@@ -42,8 +42,8 @@
 		<ApplicationId>com.companyname.manycontrol</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.0.17</ApplicationDisplayVersion>
-		<ApplicationVersion>18</ApplicationVersion>
+		<ApplicationDisplayVersion>1.0.18</ApplicationDisplayVersion>
+		<ApplicationVersion>19</ApplicationVersion>
 
 		<!-- Windows App Icon -->
 		<ApplicationIcon>appicon.ico</ApplicationIcon>

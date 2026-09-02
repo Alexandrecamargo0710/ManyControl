@@ -156,11 +156,12 @@ public partial class ExtratoViewModel : ObservableObject
             var ano = MesReferencia.Year;
             var mes = MesReferencia.Month;
 
-            // Processa recorrência caso haja despesas a gerar
-            await _financeService.ProcessarDespesasRecorrentesAsync(MesReferencia);
+            var receitasTask = _financeService.GetReceitasPorMesAsync(ano, mes);
+            var despesasTask = _financeService.GetDespesasPorMesAsync(ano, mes);
+            await Task.WhenAll(receitasTask, despesasTask);
 
-            var receitas = await _financeService.GetReceitasPorMesAsync(ano, mes);
-            var despesas = await _financeService.GetDespesasPorMesAsync(ano, mes);
+            var receitas = await receitasTask;
+            var despesas = await despesasTask;
 
             var totalReceitasRecebidas = receitas.Where(r => r.Recebida).Sum(r => r.Valor);
             TotalReceitasPendentesMes = receitas.Where(r => !r.Recebida).Sum(r => r.Valor);

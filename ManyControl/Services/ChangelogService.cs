@@ -1,4 +1,4 @@
-﻿namespace ManyControl.Services;
+namespace ManyControl.Services;
 
 public class DestaqueInfo
 {
@@ -35,10 +35,41 @@ public class ChangelogService
     [
         new VersaoInfo
         {
+            Numero = "v1.0.18",
+            DataLancamento = "02/09/2026",
+            Titulo = "Desempenho e Fluidez Aprimorados",
+            IsAtual = true,
+            Destaques =
+            [
+                new DestaqueInfo
+                {
+                    Tipo = "Melhoria",
+                    Titulo = "Navegação Instantânea",
+                    Descricao = "Troca de abas ultra-rápida e fluida sem recarregamentos no celular e computador.",
+                    Icone = "⚡"
+                },
+                new DestaqueInfo
+                {
+                    Tipo = "Melhoria",
+                    Titulo = "Carregamento Otimizado",
+                    Descricao = "Consultas e leitura de dados otimizadas no banco de dados para uma resposta imediata.",
+                    Icone = "🚀"
+                },
+                new DestaqueInfo
+                {
+                    Tipo = "Ajuste",
+                    Titulo = "Avisos de Atualização Diretos",
+                    Descricao = "Notificação de novas versões mais limpa e simplificada.",
+                    Icone = "✓"
+                }
+            ]
+        },
+        new VersaoInfo
+        {
             Numero = "v1.0.17",
             DataLancamento = "02/09/2026",
             Titulo = "Tema Claro e Visual Aprimorado",
-            IsAtual = true,
+            IsAtual = false,
             Destaques =
             [
                 new DestaqueInfo

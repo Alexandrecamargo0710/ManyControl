@@ -323,14 +323,9 @@ public partial class ConfiguracoesViewModel : ObservableObject
 
             UpdateStatusText = $"Nova versão {update.TagName} disponível!";
 
-            var novidades = FormatarNotasAtualizacao(update.ReleaseNotes);
-
             var confirm = await _dialogService.ShowConfirmationAsync(
-                $"Nova Versão ({update.TagName}) 🎉",
-                $"Uma nova versão do ManyControl está pronta para instalação!\n\n" +
-                $"📋 O que mudou nesta versão:\n" +
-                $"{novidades}\n\n" +
-                $"Deseja baixar e atualizar agora?",
+                $"Nova Versão ({update.TagName})",
+                $"Uma nova versão do ManyControl ({update.TagName}) está disponível para download!\n\nDeseja atualizar agora?",
                 "Atualizar Agora",
                 "Depois");
 
