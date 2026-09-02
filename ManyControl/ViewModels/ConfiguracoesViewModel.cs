@@ -46,17 +46,104 @@ public partial class ConfiguracoesViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsDownloadingUpdate { get; set; }
 
+    private readonly ChangelogService _changelogService;
+
     [ObservableProperty]
     public partial double UpdateProgress { get; set; }
 
     [ObservableProperty]
     public partial string UpdateProgressText { get; set; } = string.Empty;
 
-    public ConfiguracoesViewModel(SyncService syncService, UpdateService updateService, IDialogService dialogService)
+    [ObservableProperty]
+    public partial bool IsDarkTheme { get; set; } = true;
+
+    [ObservableProperty]
+    public partial bool IsLightTheme { get; set; }
+
+    [ObservableProperty]
+    public partial string ThemeText { get; set; } = "Tema Escuro";
+
+    [ObservableProperty]
+    public partial VersaoInfo VersaoAtual { get; set; } = new();
+
+    [ObservableProperty]
+    public partial List<VersaoInfo> HistoricoVersoes { get; set; } = [];
+
+    [ObservableProperty]
+    public partial bool IsHistoricoModalOpen { get; set; }
+
+    public ConfiguracoesViewModel(SyncService syncService, UpdateService updateService, IDialogService dialogService, ChangelogService changelogService)
     {
         _syncService = syncService;
         _updateService = updateService;
         _dialogService = dialogService;
+        _changelogService = changelogService;
+
+        var savedTheme = Preferences.Get("app_theme", "Dark");
+        IsDarkTheme = savedTheme != "Light";
+        IsLightTheme = savedTheme == "Light";
+        ThemeText = IsDarkTheme ? "Tema Escuro" : "Tema Claro";
+
+        VersaoAtual = _changelogService.GetVersaoAtual();
+        HistoricoVersoes = _changelogService.GetHistorico();
+    }
+
+    public string ThemeToggleIcon => IsDarkTheme ? "☀️" : "🌙";
+    public string ThemeToggleImage => IsDarkTheme ? "ic_sun_yellow.png" : "ic_moon_blue.png";
+    public string ThemeEscuroIcon => IsDarkTheme ? "ic_moon_white.png" : "ic_moon_dark.png";
+    public string ThemeClaroIcon => IsLightTheme ? "ic_sun_white.png" : (IsDarkTheme ? "ic_sun_white.png" : "ic_sun_dark.png");
+    public Color ThemeEscuroBg => IsDarkTheme ? Color.FromArgb("#2563EB") : (IsLightTheme ? Color.FromArgb("#F1F5F9") : Color.FromArgb("#1F2937"));
+    public Color ThemeEscuroText => IsDarkTheme ? Colors.White : (IsLightTheme ? Color.FromArgb("#0F172A") : Colors.White);
+    public Color ThemeClaroBg => IsLightTheme ? Color.FromArgb("#0284C7") : (IsDarkTheme ? Color.FromArgb("#1F2937") : Color.FromArgb("#F1F5F9"));
+    public Color ThemeClaroText => IsLightTheme ? Colors.White : (IsDarkTheme ? Colors.White : Color.FromArgb("#0F172A"));
+
+    [RelayCommand]
+    public void SetTheme(string? theme)
+    {
+        if (theme == "light")
+        {
+            if (Application.Current != null) Application.Current.UserAppTheme = AppTheme.Light;
+            Preferences.Set("app_theme", "Light");
+            IsLightTheme = true;
+            IsDarkTheme = false;
+            ThemeText = "Tema Claro";
+        }
+        else
+        {
+            if (Application.Current != null) Application.Current.UserAppTheme = AppTheme.Dark;
+            Preferences.Set("app_theme", "Dark");
+            IsLightTheme = false;
+            IsDarkTheme = true;
+            ThemeText = "Tema Escuro";
+        }
+
+        OnPropertyChanged(nameof(ThemeToggleIcon));
+        OnPropertyChanged(nameof(ThemeToggleImage));
+        OnPropertyChanged(nameof(ThemeEscuroIcon));
+        OnPropertyChanged(nameof(ThemeClaroIcon));
+        OnPropertyChanged(nameof(ThemeEscuroBg));
+        OnPropertyChanged(nameof(ThemeEscuroText));
+        OnPropertyChanged(nameof(ThemeClaroBg));
+        OnPropertyChanged(nameof(ThemeClaroText));
+    }
+
+    [RelayCommand]
+    public void ToggleTheme()
+    {
+        SetTheme(IsDarkTheme ? "light" : "dark");
+    }
+
+    [RelayCommand]
+    public void AbrirHistorico()
+    {
+        HistoricoVersoes = _changelogService.GetHistorico();
+        IsHistoricoModalOpen = true;
+    }
+
+    [RelayCommand]
+    public void FecharHistorico()
+    {
+        IsHistoricoModalOpen = false;
     }
 
     [RelayCommand]

@@ -8,7 +8,8 @@ public partial class App : Application
     {
         InitializeComponent();
         _services = services;
-        UserAppTheme = AppTheme.Dark;
+        var savedTheme = Preferences.Get("app_theme", "Dark");
+        UserAppTheme = savedTheme == "Light" ? AppTheme.Light : AppTheme.Dark;
     }
 
     protected override Window CreateWindow(IActivationState? activationState)

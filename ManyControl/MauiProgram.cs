@@ -34,6 +34,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<GoogleDriveService>();
         builder.Services.AddSingleton<SyncService>();
         builder.Services.AddSingleton<UpdateService>();
+        builder.Services.AddSingleton<ChangelogService>();
 
         builder.Services.AddSingleton<AppShell>();
         builder.Services.AddTransient<MainViewModel>();

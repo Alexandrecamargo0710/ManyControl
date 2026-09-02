@@ -2,17 +2,19 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:ManyControl.ViewModels"
+             xmlns:services="clr-namespace:ManyControl.Services"
              x:Class="ManyControl.Views.ConfiguracoesPage"
              x:DataType="vm:ConfiguracoesViewModel"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="#0b0f19"
+             BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#0B0F19}"
              Title="Sincronização">
 
     <ContentPage.Resources>
         <Style x:Key="CardBorderStyle" TargetType="Border">
-            <Setter Property="Stroke" Value="#374151" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light=#E2E8F0, Dark=#374151}" />
             <Setter Property="StrokeThickness" Value="1" />
             <Setter Property="Padding" Value="20" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#FFFFFF, Dark=#111827}" />
             <Setter Property="StrokeShape">
                 <Setter.Value>
                     <RoundRectangle CornerRadius="18" />
@@ -25,240 +27,509 @@
         <ScrollView>
             <VerticalStackLayout Padding="20" Spacing="18">
 
-            <!-- Card 1: Conexão com o Google Drive (Modo NÃO CONECTADO) -->
-            <Border Style="{StaticResource CardBorderStyle}"
-                    BackgroundColor="#111827"
-                    IsVisible="{Binding IsGoogleDriveDisconnected}">
-                <VerticalStackLayout Spacing="16">
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="Google Drive" TextColor="White" FontSize="20" FontAttributes="Bold" />
-                        <Label Text="Conecte sua conta do Google para sincronizar automaticamente seus dados na nuvem com backup duplo (pasta do Drive e armazenamento seguro)."
-                               TextColor="#9CA3AF"
-                               FontSize="13" />
+                <!-- Topo: Marca e Botão Rápido de Alternar Tema -->
+                <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center" Margin="0,4,0,2">
+                    <Image Source="app_logo.png" WidthRequest="44" HeightRequest="44" Aspect="AspectFit" VerticalOptions="Center" Margin="0,0,12,0" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                        <Label Text="ManyControl" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" />
+                        <Label Text="Gestão Financeira e Sincronização em Nuvem" FontSize="12" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" />
                     </VerticalStackLayout>
-
-                    <!-- Botão Oficial do Google com Logo SVG -->
-                    <Border Stroke="#E5E7EB"
+                    
+                    <!-- Botão de Alternar Tema (Ícone Sol / Lua) -->
+                    <Border Grid.Column="2"
+                            WidthRequest="42"
+                            HeightRequest="42"
                             StrokeThickness="1"
-                            BackgroundColor="#FFFFFF"
-                            Padding="20,12"
-                            HeightRequest="52"
-                            HorizontalOptions="Start">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="26" />
-                        </Border.StrokeShape>
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding ConectarGoogleCommand}" />
-                        </Border.GestureRecognizers>
-                        <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
-                            <Image Source="google_logo.png"
-                                   WidthRequest="22"
-                                   HeightRequest="22"
-                                   VerticalOptions="Center" />
-                            <Label Text="Fazer login com o Google"
-                                   TextColor="#1F2937"
-                                   FontSize="15"
-                                   FontAttributes="Bold"
-                                   VerticalOptions="Center" />
-                        </HorizontalStackLayout>
-                    </Border>
-                </VerticalStackLayout>
-            </Border>
-
-            <!-- Card 2: Conexão com o Google Drive (Modo CONECTADO) -->
-            <Border Style="{StaticResource CardBorderStyle}"
-                    BackgroundColor="#111827"
-                    IsVisible="{Binding IsGoogleDriveConnected}">
-                <VerticalStackLayout Spacing="16">
-                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                            <Image Source="google_logo.png" WidthRequest="20" HeightRequest="20" VerticalOptions="Center" />
-                            <Label Text="Google Drive Conectado" TextColor="#34D399" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
-                        </HorizontalStackLayout>
-                        <Border Grid.Column="1" StrokeThickness="0" BackgroundColor="#064E3B" Padding="10,4">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="12" />
-                            </Border.StrokeShape>
-                            <Label Text="● Ativo" TextColor="#A7F3D0" FontSize="11" FontAttributes="Bold" />
-                        </Border>
-                    </Grid>
-
-                    <Border Stroke="#374151" StrokeThickness="1" Padding="16,12" BackgroundColor="#1F2937">
+                            Stroke="{AppThemeBinding Light=#CBD5E1, Dark=#374151}"
+                            BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#111827}"
+                            VerticalOptions="Center">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="12" />
                         </Border.StrokeShape>
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="Conta Google vinculada:" TextColor="#9CA3AF" FontSize="12" />
-                            <Label Text="{Binding ConnectedEmail}" TextColor="White" FontSize="16" FontAttributes="Bold" />
-                            <Label Text="Pasta de destino: 'ManyControl' na raiz do seu Drive." TextColor="#6EE7B7" FontSize="12" Margin="0,4,0,0" />
-                        </VerticalStackLayout>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleThemeCommand}" />
+                        </Border.GestureRecognizers>
+                        <Image Source="{Binding ThemeToggleImage}"
+                               WidthRequest="22"
+                               HeightRequest="22"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
                     </Border>
+                </Grid>
 
-                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="8">
-                        <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="2">
-                            <Label Text="Última Sincronização" TextColor="#9CA3AF" FontSize="12" />
-                            <Label Text="{Binding LastSyncText}" TextColor="White" FontSize="14" FontAttributes="Bold" />
-                        </VerticalStackLayout>
+                <!-- Card: Aparência do Aplicativo -->
+                <Border Style="{StaticResource CardBorderStyle}">
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                            <Label Text="Aparência do Aplicativo" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="18" FontAttributes="Bold" />
+                            <Label Grid.Column="1" Text="{Binding ThemeText}" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" FontSize="12" FontAttributes="Bold" VerticalOptions="Center" />
+                        </Grid>
+                        <Label Text="Escolha entre o tema escuro confortável para a visão ou o tema claro de alto contraste e elegância."
+                               TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}"
+                               FontSize="13"
+                               LineHeight="1.4" />
 
-                        <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="2">
-                            <Label Text="Última Operação" TextColor="#9CA3AF" FontSize="12" />
-                            <Label Text="{Binding LastSyncModeText}" TextColor="#E5E7EB" FontSize="14" />
-                        </VerticalStackLayout>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,4,0,0">
+                            <!-- Botão Tema Escuro -->
+                            <Border Grid.Column="0"
+                                    HeightRequest="46"
+                                    StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light=#E2E8F0, Dark=Transparent}"
+                                    BackgroundColor="{Binding ThemeEscuroBg}">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12" />
+                                </Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="dark" />
+                                </Border.GestureRecognizers>
+                                <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Image Source="{Binding ThemeEscuroIcon}" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
+                                    <Label Text="Tema Escuro"
+                                           FontSize="14"
+                                           FontAttributes="Bold"
+                                           TextColor="{Binding ThemeEscuroText}"
+                                           VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                            </Border>
 
-                        <VerticalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="2">
-                            <Label Text="Status do Robô" TextColor="#9CA3AF" FontSize="12" />
-                            <Label Text="{Binding SyncStatusText}" TextColor="#A7F3D0" FontSize="13" FontAttributes="Bold" />
-                        </VerticalStackLayout>
-                    </Grid>
-
-                    <HorizontalStackLayout Spacing="12">
-                        <Button Text="🔄 Sincronizar Agora"
-                                HeightRequest="46"
-                                FontSize="15"
-                                FontAttributes="Bold"
-                                BackgroundColor="#2563EB"
-                                TextColor="White"
-                                Command="{Binding SincronizarCommand}" />
-
-                        <Button Text="Desconectar Conta"
-                                HeightRequest="46"
-                                FontSize="14"
-                                BackgroundColor="#374151"
-                                TextColor="#F87171"
-                                Command="{Binding DesconectarGoogleCommand}" />
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Border>
-
-            <!-- Card 3: Backups Manuais (Arquivos Locais em JSON) -->
-            <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#111827">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="Backup Local (Arquivo Físico)" TextColor="White" FontSize="18" FontAttributes="Bold" />
-                    <Label Text="Exporte uma cópia de segurança física no seu computador ou restaure um backup antigo a qualquer momento sem precisar de internet."
-                           FontSize="13"
-                           TextColor="#9CA3AF" />
-
-                    <HorizontalStackLayout Spacing="12">
-                        <Button Text="Exportar Backup Local"
-                                BackgroundColor="#374151"
-                                TextColor="White"
-                                Command="{Binding ExportarBackupManualCommand}" />
-
-                        <Button Text="Restaurar de Arquivo"
-                                BackgroundColor="#374151"
-                                TextColor="White"
-                                Command="{Binding ImportarBackupManualCommand}" />
-                    </HorizontalStackLayout>
-
-                    <VerticalStackLayout Spacing="2" Margin="0,8,0,0">
-                        <Label Text="Caminho do banco local:" FontSize="11" TextColor="#6B7280" />
-                        <Label Text="{Binding LocalSyncPath}" FontSize="11" TextColor="#9CA3AF" LineBreakMode="CharacterWrap" />
+                            <!-- Botão Tema Claro -->
+                            <Border Grid.Column="1"
+                                    HeightRequest="46"
+                                    StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light=#E2E8F0, Dark=Transparent}"
+                                    BackgroundColor="{Binding ThemeClaroBg}">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12" />
+                                </Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="light" />
+                                </Border.GestureRecognizers>
+                                <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Image Source="{Binding ThemeClaroIcon}" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
+                                    <Label Text="Tema Claro"
+                                           FontSize="14"
+                                           FontAttributes="Bold"
+                                           TextColor="{Binding ThemeClaroText}"
+                                           VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                            </Border>
+                        </Grid>
                     </VerticalStackLayout>
-                </VerticalStackLayout>
-            </Border>
+                </Border>
 
-            <!-- Card 4: Atualizações do Aplicativo -->
-            <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#111827">
-                <VerticalStackLayout Spacing="14">
-                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                        <VerticalStackLayout Spacing="2">
-                            <Label Text="Atualizações do ManyControl" TextColor="White" FontSize="18" FontAttributes="Bold" />
-                            <Label Text="Verifique e instale as versões mais recentes com melhorias e correções diretamente pelo app."
-                                   FontSize="13"
-                                   TextColor="#9CA3AF" />
+                <!-- Card 1: Conexão com o Google Drive (Modo NÃO CONECTADO) -->
+                <Border Style="{StaticResource CardBorderStyle}"
+                        IsVisible="{Binding IsGoogleDriveDisconnected}">
+                    <VerticalStackLayout Spacing="16">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Google Drive" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="20" FontAttributes="Bold" />
+                            <Label Text="Conecte sua conta do Google para sincronizar automaticamente seus dados na nuvem com backup duplo (pasta do Drive e armazenamento seguro)."
+                                   TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}"
+                                   FontSize="13" />
                         </VerticalStackLayout>
-                        <Border Grid.Column="1" StrokeThickness="0" BackgroundColor="#1E293B" Padding="12,6" VerticalOptions="Start">
+
+                        <!-- Botão Oficial do Google com Logo -->
+                        <Border Stroke="{AppThemeBinding Light=#CBD5E1, Dark=#374151}"
+                                StrokeThickness="1"
+                                BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#1F2937}"
+                                Padding="20,12"
+                                HeightRequest="52"
+                                HorizontalOptions="Start">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="26" />
+                            </Border.StrokeShape>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ConectarGoogleCommand}" />
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                                <Image Source="google_logo.png"
+                                       WidthRequest="22"
+                                       HeightRequest="22"
+                                       VerticalOptions="Center" />
+                                <Label Text="Fazer login com o Google"
+                                       TextColor="{AppThemeBinding Light=#0F172A, Dark=White}"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Card 2: Conexão com o Google Drive (Modo CONECTADO) -->
+                <Border Style="{StaticResource CardBorderStyle}"
+                        IsVisible="{Binding IsGoogleDriveConnected}">
+                    <VerticalStackLayout Spacing="16">
+                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                <Image Source="google_logo.png" WidthRequest="20" HeightRequest="20" VerticalOptions="Center" />
+                                <Label Text="Google Drive Conectado" TextColor="#10B981" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                            <Border Grid.Column="1" StrokeThickness="0" BackgroundColor="#064E3B" Padding="10,4">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12" />
+                                </Border.StrokeShape>
+                                <Label Text="● Ativo" TextColor="#A7F3D0" FontSize="11" FontAttributes="Bold" />
+                            </Border>
+                        </Grid>
+
+                        <Border Stroke="{AppThemeBinding Light=#E2E8F0, Dark=#374151}"
+                                StrokeThickness="1"
+                                Padding="16,12"
+                                BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#1F2937}">
                             <Border.StrokeShape>
                                 <RoundRectangle CornerRadius="12" />
                             </Border.StrokeShape>
-                            <Label Text="{Binding AppVersionText}" TextColor="#38BDF8" FontSize="12" FontAttributes="Bold" />
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Conta Google vinculada:" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" FontSize="12" />
+                                <Label Text="{Binding ConnectedEmail}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="16" FontAttributes="Bold" />
+                                <Label Text="Pasta de destino: 'ManyControl' na raiz do seu Drive." TextColor="#10B981" FontSize="12" Margin="0,4,0,0" />
+                            </VerticalStackLayout>
                         </Border>
-                    </Grid>
 
-                    <!-- Status Text -->
-                    <Label Text="{Binding UpdateStatusText}" TextColor="#CBD5E1" FontSize="13" />
+                        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+                            <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="2">
+                                <Label Text="Última Sincronização" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" FontSize="12" />
+                                <Label Text="{Binding LastSyncText}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="14" FontAttributes="Bold" />
+                            </VerticalStackLayout>
 
-                    <!-- Barra de Progresso de Download -->
-                    <VerticalStackLayout Spacing="6" IsVisible="{Binding IsDownloadingUpdate}">
-                        <ProgressBar Progress="{Binding UpdateProgress}" ProgressColor="#38BDF8" />
-                        <Label Text="{Binding UpdateProgressText}" TextColor="#93C5FD" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" />
+                            <VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="2">
+                                <Label Text="Última Operação" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" FontSize="12" />
+                                <Label Text="{Binding LastSyncModeText}" TextColor="{AppThemeBinding Light=#334155, Dark=#E5E7EB}" FontSize="14" />
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="2">
+                                <Label Text="Status" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" FontSize="12" />
+                                <Label Text="{Binding SyncStatusText}" TextColor="#10B981" FontSize="13" FontAttributes="Bold" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,4,0,0">
+                            <Button Grid.Column="0"
+                                    Text="Sincronizar Agora"
+                                    HeightRequest="44"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    BackgroundColor="#0284C7"
+                                    TextColor="White"
+                                    CornerRadius="10"
+                                    Command="{Binding SincronizarAgoraCommand}" />
+
+                            <Button Grid.Column="1"
+                                    Text="Desconectar Conta"
+                                    HeightRequest="44"
+                                    FontSize="13"
+                                    BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#374151}"
+                                    TextColor="#EF4444"
+                                    CornerRadius="10"
+                                    Command="{Binding DesconectarGoogleCommand}" />
+                        </Grid>
                     </VerticalStackLayout>
-
-                    <!-- Botão de Verificação -->
-                    <Button Text="Verificar Atualizações"
-                            HeightRequest="46"
-                            FontSize="14"
-                            FontAttributes="Bold"
-                            BackgroundColor="#0284C7"
-                            TextColor="White"
-                            HorizontalOptions="Start"
-                            Command="{Binding VerificarAtualizacoesCommand}" />
-                </VerticalStackLayout>
-            </Border>
-
-        </VerticalStackLayout>
-    </ScrollView>
-
-    <!-- Overlay Bloqueante de Atualização em Tela Cheia -->
-    <Grid IsVisible="{Binding IsDownloadingUpdate}"
-          ZIndex="9999"
-          BackgroundColor="#F20B0F19"
-          InputTransparent="False"
-          HorizontalOptions="Fill"
-          VerticalOptions="Fill">
-        <Border BackgroundColor="#111827"
-                Stroke="#374151"
-                StrokeThickness="1"
-                Padding="32"
-                MaximumWidthRequest="420"
-                Margin="24"
-                HorizontalOptions="Center"
-                VerticalOptions="Center">
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="24" />
-            </Border.StrokeShape>
-            <VerticalStackLayout Spacing="18" HorizontalOptions="Center">
-                <Border BackgroundColor="#0284C7"
-                        StrokeThickness="0"
-                        WidthRequest="64"
-                        HeightRequest="64"
-                        HorizontalOptions="Center">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="32" />
-                    </Border.StrokeShape>
-                    <Label Text="↓"
-                           FontSize="32"
-                           FontAttributes="Bold"
-                           TextColor="White"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center" />
                 </Border>
 
-                <Label Text="Atualizando ManyControl"
-                       TextColor="White"
-                       FontSize="20"
-                       FontAttributes="Bold"
-                       HorizontalOptions="Center" />
+                <!-- Card 3: Backup Local (Arquivo Físico) -->
+                <Border Style="{StaticResource CardBorderStyle}">
+                    <VerticalStackLayout Spacing="16">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Backup Local (Arquivo Físico)" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="20" FontAttributes="Bold" />
+                            <Label Text="Exporte uma cópia de segurança física no seu computador ou restaure um backup antigo a qualquer momento sem precisar de internet."
+                                   TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}"
+                                   FontSize="13" />
+                        </VerticalStackLayout>
 
-                <Label Text="Baixando os arquivos da nova versão...&#10;O aplicativo será reiniciado automaticamente ao concluir."
-                       TextColor="#9CA3AF"
-                       FontSize="13"
-                       HorizontalTextAlignment="Center"
-                       HorizontalOptions="Center" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <Button Grid.Column="0"
+                                    Text="Exportar Backup Local"
+                                    HeightRequest="44"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#374151}"
+                                    TextColor="{AppThemeBinding Light=#0F172A, Dark=White}"
+                                    BorderColor="{AppThemeBinding Light=#CBD5E1, Dark=Transparent}"
+                                    BorderWidth="1"
+                                    CornerRadius="10"
+                                    Command="{Binding ExportarBackupLocalCommand}" />
 
-                <ProgressBar Progress="{Binding UpdateProgress}"
-                             ProgressColor="#38BDF8"
-                             HeightRequest="8"
-                             HorizontalOptions="Fill" />
+                            <Button Grid.Column="1"
+                                    Text="Restaurar de Arquivo"
+                                    HeightRequest="44"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#374151}"
+                                    TextColor="{AppThemeBinding Light=#0F172A, Dark=White}"
+                                    BorderColor="{AppThemeBinding Light=#CBD5E1, Dark=Transparent}"
+                                    BorderWidth="1"
+                                    CornerRadius="10"
+                                    Command="{Binding ImportarBackupLocalCommand}" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
 
-                <Label Text="{Binding UpdateProgressText}"
-                       TextColor="#38BDF8"
-                       FontSize="14"
-                       FontAttributes="Bold"
-                       HorizontalOptions="Center" />
+                <!-- Card 4: Atualizações do ManyControl -->
+                <Border Style="{StaticResource CardBorderStyle}">
+                    <VerticalStackLayout Spacing="16">
+                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="Atualizações do ManyControl" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="20" FontAttributes="Bold" />
+                                <Label Text="Versão instalada com atualizações e melhorias contínuas."
+                                       FontSize="13"
+                                       TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" />
+                            </VerticalStackLayout>
+                            <Border Grid.Column="1" StrokeThickness="1"
+                                    Stroke="{AppThemeBinding Light=#CBD5E1, Dark=#1E293B}"
+                                    BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#1E293B}"
+                                    Padding="12,6"
+                                    VerticalOptions="Start">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12" />
+                                </Border.StrokeShape>
+                                <Label Text="{Binding VersaoAtual.Numero}" TextColor="#0284C7" FontSize="12" FontAttributes="Bold" />
+                            </Border>
+                        </Grid>
+
+                        <!-- Caixa de Destaques da Versão Atual (Estilo amigável) -->
+                        <Border Stroke="{AppThemeBinding Light=#CBD5E1, Dark=#1E293B}"
+                                StrokeThickness="1"
+                                BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#0F172A}"
+                                Padding="16">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14" />
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Spacing="10">
+                                <!-- Cabeçalho das novidades -->
+                                <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                        <Label Text="✦" TextColor="#0284C7" FontSize="14" VerticalOptions="Center" />
+                                        <Label Text="{Binding VersaoAtual.Numero, StringFormat='Novidades da versão {0}'}"
+                                               TextColor="#0284C7"
+                                               FontSize="14"
+                                               FontAttributes="Bold"
+                                               VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding VersaoAtual.DataLancamento}"
+                                           TextColor="{AppThemeBinding Light=#64748B, Dark=#94A3B8}"
+                                           FontSize="12"
+                                           VerticalOptions="Center" />
+                                </Grid>
+
+                                <!-- Lista de destaques com badges -->
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding VersaoAtual.Destaques}" Spacing="8">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="services:DestaqueInfo">
+                                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" Margin="0,2">
+                                                <Label Grid.Column="0" Text="{Binding Icone}" FontSize="16" VerticalOptions="Start" Margin="0,2,0,0" />
+                                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                                        <Border BackgroundColor="{Binding CorBadge}" StrokeThickness="0" Padding="6,2">
+                                                            <Border.StrokeShape>
+                                                                <RoundRectangle CornerRadius="6" />
+                                                            </Border.StrokeShape>
+                                                            <Label Text="{Binding Tipo}" TextColor="{Binding CorTextoBadge}" FontSize="10" FontAttributes="Bold" />
+                                                        </Border>
+                                                        <Label Text="{Binding Titulo}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="13" FontAttributes="Bold" VerticalOptions="Center" />
+                                                    </HorizontalStackLayout>
+                                                    <Label Text="{Binding Descricao}" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" FontSize="12" LineHeight="1.3" />
+                                                </VerticalStackLayout>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Label Text="Toque em 'Verificar Atualizações' para forçar a verificação da versão mais recente no seu aparelho."
+                               TextColor="{AppThemeBinding Light=#64748B, Dark=#CBD5E1}"
+                               FontSize="13" />
+
+                        <!-- Barra de Progresso de Download -->
+                        <VerticalStackLayout Spacing="6" IsVisible="{Binding IsDownloadingUpdate}">
+                            <ProgressBar Progress="{Binding UpdateProgress}" ProgressColor="#0284C7" />
+                            <Label Text="{Binding UpdateProgressText}" TextColor="#0284C7" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+
+                        <!-- Botões de Ação de Atualização -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                            <Button Grid.Column="0"
+                                    Text="Verificar Atualizações"
+                                    HeightRequest="46"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    BackgroundColor="#0284C7"
+                                    TextColor="White"
+                                    CornerRadius="12"
+                                    Command="{Binding VerificarAtualizacoesCommand}" />
+
+                            <Button Grid.Column="1"
+                                    Text="Histórico de Versões"
+                                    HeightRequest="46"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#374151}"
+                                    TextColor="{AppThemeBinding Light=#0F172A, Dark=White}"
+                                    BorderColor="{AppThemeBinding Light=#CBD5E1, Dark=Transparent}"
+                                    BorderWidth="1"
+                                    CornerRadius="12"
+                                    Command="{Binding AbrirHistoricoCommand}" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
             </VerticalStackLayout>
-        </Border>
+        </ScrollView>
+
+        <!-- Modal: Histórico de Atualizações -->
+        <Grid IsVisible="{Binding IsHistoricoModalOpen}"
+              ZIndex="999"
+              BackgroundColor="{AppThemeBinding Light=#80000000, Dark=#CC000000}"
+              InputTransparent="False"
+              HorizontalOptions="Fill"
+              VerticalOptions="Fill">
+            <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#111827}"
+                    Stroke="{AppThemeBinding Light=#E2E8F0, Dark=#374151}"
+                    StrokeThickness="1"
+                    Padding="24"
+                    MaximumWidthRequest="520"
+                    Margin="20"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="20" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="16">
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Histórico de Atualizações" FontSize="18" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" />
+                        <Button Grid.Column="1"
+                                Text="✕"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                WidthRequest="36"
+                                HeightRequest="36"
+                                Padding="0"
+                                CornerRadius="18"
+                                BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#1F2937}"
+                                TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}"
+                                Command="{Binding FecharHistoricoCommand}" />
+                    </Grid>
+
+                    <ScrollView MaximumHeightRequest="400">
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding HistoricoVersoes}" Spacing="14">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="services:VersaoInfo">
+                                    <Border Stroke="{AppThemeBinding Light=#E2E8F0, Dark=#1E293B}"
+                                            StrokeThickness="1"
+                                            BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#0F172A}"
+                                            Padding="14">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="12" />
+                                        </Border.StrokeShape>
+                                        <VerticalStackLayout Spacing="8">
+                                            <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                                    <Label Text="{Binding Numero}" FontSize="14" FontAttributes="Bold" TextColor="#0284C7" />
+                                                    <Label Text="{Binding Titulo, StringFormat='- {0}'}" FontSize="13" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" VerticalOptions="Center" />
+                                                </HorizontalStackLayout>
+                                                <Label Grid.Column="1" Text="{Binding DataLancamento}" FontSize="12" TextColor="{AppThemeBinding Light=#64748B, Dark=#94A3B8}" VerticalOptions="Center" />
+                                            </Grid>
+
+                                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Destaques}" Spacing="6" Margin="0,4,0,0">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="services:DestaqueInfo">
+                                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                                            <Label Grid.Column="0" Text="{Binding Icone}" FontSize="14" VerticalOptions="Start" />
+                                                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                                                <HorizontalStackLayout Spacing="6">
+                                                                    <Border BackgroundColor="{Binding CorBadge}" StrokeThickness="0" Padding="5,1">
+                                                                        <Border.StrokeShape>
+                                                                            <RoundRectangle CornerRadius="4" />
+                                                                        </Border.StrokeShape>
+                                                                        <Label Text="{Binding Tipo}" TextColor="{Binding CorTextoBadge}" FontSize="9" FontAttributes="Bold" />
+                                                                    </Border>
+                                                                    <Label Text="{Binding Titulo}" FontSize="12" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" />
+                                                                </HorizontalStackLayout>
+                                                                <Label Text="{Binding Descricao}" FontSize="11" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" />
+                                                            </VerticalStackLayout>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </VerticalStackLayout>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <Button Text="Fechar"
+                            HeightRequest="42"
+                            CornerRadius="10"
+                            BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#374151}"
+                            TextColor="{AppThemeBinding Light=#0F172A, Dark=White}"
+                            Command="{Binding FecharHistoricoCommand}" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Overlay Bloqueante de Atualização em Tela Cheia -->
+        <Grid IsVisible="{Binding IsDownloadingUpdate}"
+              ZIndex="9999"
+              BackgroundColor="{AppThemeBinding Light=#E6FFFFFF, Dark=#F20B0F19}"
+              InputTransparent="False"
+              HorizontalOptions="Fill"
+              VerticalOptions="Fill">
+            <Border BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#111827}"
+                    Stroke="{AppThemeBinding Light=#E2E8F0, Dark=#374151}"
+                    StrokeThickness="1"
+                    Padding="32"
+                    MaximumWidthRequest="420"
+                    Margin="24"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="24" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="18" HorizontalOptions="Center">
+                    <Border BackgroundColor="#0284C7"
+                            StrokeThickness="0"
+                            WidthRequest="64"
+                            HeightRequest="64"
+                            HorizontalOptions="Center">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="32" />
+                        </Border.StrokeShape>
+                        <Label Text="↓"
+                               FontSize="32"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Border>
+
+                    <Label Text="Atualizando ManyControl"
+                           TextColor="{AppThemeBinding Light=#0F172A, Dark=White}"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center" />
+
+                    <Label Text="Baixando os arquivos da nova versão...&#10;O aplicativo será reiniciado automaticamente ao concluir."
+                           TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}"
+                           FontSize="13"
+                           HorizontalTextAlignment="Center"
+                           HorizontalOptions="Center" />
+
+                    <ProgressBar Progress="{Binding UpdateProgress}"
+                                 ProgressColor="#0284C7"
+                                 HeightRequest="8"
+                                 HorizontalOptions="Fill" />
+
+                    <Label Text="{Binding UpdateProgressText}"
+                           TextColor="#0284C7"
+                           FontSize="14"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
     </Grid>
-</Grid>
 
 </ContentPage>

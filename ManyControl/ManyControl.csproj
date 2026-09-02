@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup Condition="'$(TargetFrameworks)' == ''">
-		<TargetFrameworks>net10.0-android</TargetFrameworks>
+		<TargetFrameworks Condition="'$(GITHUB_ACTIONS)' == 'true'">net10.0-windows10.0.19041.0;net10.0-android</TargetFrameworks>
+		<TargetFrameworks Condition="'$(TargetFrameworks)' == '' and $([MSBuild]::IsOSPlatform('windows'))">net10.0-windows10.0.19041.0</TargetFrameworks>
+		<TargetFrameworks Condition="'$(TargetFrameworks)' == '' and !$([MSBuild]::IsOSPlatform('windows'))">net10.0-android</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
 	</PropertyGroup>
 	<PropertyGroup>
 
@@ -22,6 +23,10 @@
 		<Nullable>enable</Nullable>
 		<MauiVersion Condition="'$(MauiVersion)' == ''">10.0.11</MauiVersion>
 
+		<!-- Evita que o compilador XAML do WindowsAppSDK procure pelo compilador C++ MSVC inexistente no Visual Studio -->
+		<VCInstallPath32 Condition="$([MSBuild]::IsOSPlatform('windows'))">none</VCInstallPath32>
+		<VCInstallPath64 Condition="$([MSBuild]::IsOSPlatform('windows'))">none</VCInstallPath64>
+
 		<!-- Enable XAML source generation for faster build times and improved performance.
 		     This generates C# code from XAML at compile time instead of runtime inflation.
 		     To disable, remove this line.
@@ -37,8 +42,8 @@
 		<ApplicationId>com.companyname.manycontrol</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.0.14</ApplicationDisplayVersion>
-		<ApplicationVersion>15</ApplicationVersion>
+		<ApplicationDisplayVersion>1.0.17</ApplicationDisplayVersion>
+		<ApplicationVersion>18</ApplicationVersion>
 
 		<!-- Windows App Icon -->
 		<ApplicationIcon>appicon.ico</ApplicationIcon>

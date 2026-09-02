@@ -119,11 +119,30 @@ public partial class ExtratoViewModel : ObservableObject
     private Guid? _editingId;
     private string _editingTipo = string.Empty;
 
+    [ObservableProperty]
+    public partial bool IsDarkTheme { get; set; } = true;
+
     public ExtratoViewModel(FinanceService financeService, IDialogService dialogService)
     {
         _financeService = financeService;
         _dialogService = dialogService;
+        IsDarkTheme = Preferences.Get("app_theme", "Dark") != "Light";
         AtualizarTextoMes();
+    }
+
+    public string ThemeToggleIcon => IsDarkTheme ? "☀️" : "🌙";
+    public string ThemeToggleImage => IsDarkTheme ? "ic_sun_yellow.png" : "ic_moon_blue.png";
+
+    [RelayCommand]
+    public void ToggleTheme()
+    {
+        var isCurrentlyDark = Application.Current?.UserAppTheme != AppTheme.Light;
+        var newTheme = isCurrentlyDark ? AppTheme.Light : AppTheme.Dark;
+        if (Application.Current != null) Application.Current.UserAppTheme = newTheme;
+        Preferences.Set("app_theme", newTheme == AppTheme.Light ? "Light" : "Dark");
+        IsDarkTheme = newTheme == AppTheme.Dark;
+        OnPropertyChanged(nameof(ThemeToggleIcon));
+        OnPropertyChanged(nameof(ThemeToggleImage));
     }
 
     [RelayCommand]

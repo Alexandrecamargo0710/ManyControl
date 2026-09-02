@@ -6,14 +6,15 @@
              x:Class="ManyControl.MainPage"
              x:DataType="vm:MainViewModel"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="#0b0f19"
+             BackgroundColor="{AppThemeBinding Light=#f8fafc, Dark=#0b0f19}"
              Title="Início">
 
     <ContentPage.Resources>
         <Style x:Key="CardBorderStyle" TargetType="Border">
-            <Setter Property="Stroke" Value="#374151" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light=#e2e8f0, Dark=#374151}" />
             <Setter Property="StrokeThickness" Value="1" />
             <Setter Property="Padding" Value="16" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#ffffff, Dark=#111827}" />
             <Setter Property="StrokeShape">
                 <Setter.Value>
                     <RoundRectangle CornerRadius="16" />
@@ -26,38 +27,61 @@
         <ScrollView>
             <VerticalStackLayout Padding="20" Spacing="16">
                 <!-- Cabeçalho Oficial ManyControl -->
-                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14" Margin="0,4,0,2">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14" Margin="0,4,0,2">
                     <Image Source="app_logo.png" WidthRequest="44" HeightRequest="44" Aspect="AspectFit" VerticalOptions="Center" />
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
-                        <Label Text="ManyControl" FontSize="22" FontAttributes="Bold" TextColor="White" />
-                        <Label Text="Gestão Financeira e Sincronização em Nuvem" FontSize="12" TextColor="#9CA3AF" />
+                        <Label Text="ManyControl" FontSize="22" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#0f172a, Dark=White}" />
+                        <Label Text="Gestão Financeira e Sincronização em Nuvem" FontSize="12" TextColor="{AppThemeBinding Light=#64748b, Dark=#9ca3af}" />
                     </VerticalStackLayout>
+                    
+                    <!-- Botão de Alternar Tema Rápido -->
+                    <Border Grid.Column="2"
+                            WidthRequest="42"
+                            HeightRequest="42"
+                            StrokeThickness="1"
+                            Stroke="{AppThemeBinding Light=#CBD5E1, Dark=#374151}"
+                            BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#111827}"
+                            VerticalOptions="Center">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12" />
+                        </Border.StrokeShape>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleThemeCommand}" />
+                        </Border.GestureRecognizers>
+                        <Image Source="{Binding ThemeToggleImage}"
+                               WidthRequest="22"
+                               HeightRequest="22"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Border>
                 </Grid>
 
-                <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#111827">
+                <Border Style="{StaticResource CardBorderStyle}">
                     <VerticalStackLayout Spacing="6">
-                        <Label Text="Sincronização" TextColor="White" FontSize="14" />
-                        <Label Text="{Binding LastSyncText}" TextColor="White" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="{Binding LastSyncModeText}" TextColor="#E5E7EB" FontSize="12" />
-                        <Label Text="{Binding SyncStatusText}" TextColor="#A7F3D0" FontSize="12" />
+                        <Label Text="Sincronização" TextColor="{AppThemeBinding Light=#0f172a, Dark=White}" FontSize="14" />
+                        <Label Text="{Binding LastSyncText}" TextColor="{AppThemeBinding Light=#0f172a, Dark=White}" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="{Binding LastSyncModeText}" TextColor="{AppThemeBinding Light=#334155, Dark=#e5e7eb}" FontSize="12" />
+                        <Label Text="{Binding SyncStatusText}" TextColor="#10b981" FontSize="12" FontAttributes="Bold" />
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,4,0,0">
                             <Button Grid.Column="0" Text="Sincronizar agora" HeightRequest="40" Padding="0" FontSize="13" BackgroundColor="#2563EB" TextColor="White" Command="{Binding SyncCommand}" />
-                            <Button Grid.Column="1" Text="Importar backup" HeightRequest="40" Padding="0" FontSize="13" BackgroundColor="#374151" TextColor="White" Command="{Binding ImportSyncCommand}" />
+                            <Button Grid.Column="1" Text="Importar backup" HeightRequest="40" Padding="0" FontSize="13" BackgroundColor="{AppThemeBinding Light=#f1f5f9, Dark=#374151}" TextColor="{AppThemeBinding Light=#0f172a, Dark=White}" Command="{Binding ImportSyncCommand}" />
                         </Grid>
                     </VerticalStackLayout>
                 </Border>
 
                 <!-- Seletor de Mês do Início -->
-                <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#111827" Padding="12">
+                <!-- Seletor de Mês do Início -->
+                <Border Style="{StaticResource CardBorderStyle}" Padding="12">
                     <VerticalStackLayout Spacing="8">
                         <HorizontalStackLayout HorizontalOptions="Center" Spacing="16" VerticalOptions="Center">
                             <Button Text="◀"
                                     WidthRequest="40" HeightRequest="40" Padding="0" CornerRadius="10"
-                                    BackgroundColor="#374151" TextColor="White" FontSize="15"
+                                    BackgroundColor="{AppThemeBinding Light=#f1f5f9, Dark=#374151}"
+                                    TextColor="{AppThemeBinding Light=#0f172a, Dark=White}" FontSize="15"
                                     Command="{Binding MesAnteriorCommand}" />
 
                             <Label Text="{Binding MesAnoTexto}"
-                                   TextColor="White"
+                                   TextColor="{AppThemeBinding Light=#0f172a, Dark=White}"
                                    FontSize="18"
                                    FontAttributes="Bold"
                                    VerticalOptions="Center"
@@ -65,13 +89,15 @@
 
                             <Button Text="▶"
                                     WidthRequest="40" HeightRequest="40" Padding="0" CornerRadius="10"
-                                    BackgroundColor="#374151" TextColor="White" FontSize="15"
+                                    BackgroundColor="{AppThemeBinding Light=#f1f5f9, Dark=#374151}"
+                                    TextColor="{AppThemeBinding Light=#0f172a, Dark=White}" FontSize="15"
                                     Command="{Binding ProximoMesCommand}" />
                         </HorizontalStackLayout>
 
                         <Button Text="Ir para o mês atual"
                                 HeightRequest="32" Padding="14,0" FontSize="12" CornerRadius="8"
-                                BackgroundColor="#1F2937" TextColor="#9CA3AF"
+                                BackgroundColor="{AppThemeBinding Light=#f1f5f9, Dark=#1F2937}"
+                                TextColor="{AppThemeBinding Light=#64748b, Dark=#9CA3AF}"
                                 HorizontalOptions="Center"
                                 IsVisible="{Binding IsMesDiferenteDoAtual}"
                                 Command="{Binding MesAtualCommand}" />
@@ -80,193 +106,206 @@
 
                 <!-- Resumo Financeiro do Mês & Saldo Geral -->
                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
-                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#1F2937" Grid.Row="0" Grid.Column="0" Padding="12">
+                    <Border Style="{StaticResource CardBorderStyle}"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}"
+                            Stroke="{AppThemeBinding Light=#E2E8F0, Dark=#374151}"
+                            Grid.Row="0" Grid.Column="0" Padding="12">
                         <VerticalStackLayout Spacing="2">
                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                                <Label Text="Balanço do Mês" TextColor="#9CA3AF" FontSize="12" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="ⓘ" TextColor="#9CA3AF" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
+                                <Label Text="Balanço do Mês" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" FontSize="12" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="ⓘ" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="balanco" />
                                     </Label.GestureRecognizers>
                                 </Label>
                             </Grid>
-                            <Label Text="{Binding BalancoMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                            <Label Text="{Binding BalancoMes, StringFormat='R$ {0:N2}'}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="20" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#1E1B4B" Grid.Row="0" Grid.Column="1" Padding="12">
+                    <Border Style="{StaticResource CardBorderStyle}"
+                            BackgroundColor="{AppThemeBinding Light=#EEF2FF, Dark=#1E1B4B}"
+                            Stroke="{AppThemeBinding Light=#C7D2FE, Dark=#3730A3}"
+                            Grid.Row="0" Grid.Column="1" Padding="12">
                         <VerticalStackLayout Spacing="2">
                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                                <Label Text="Saldo Geral (Conta)" TextColor="#A5B4FC" FontSize="12" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="ⓘ" TextColor="#A5B4FC" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
+                                <Label Text="Saldo Geral (Conta)" TextColor="{AppThemeBinding Light=#4F46E5, Dark=#A5B4FC}" FontSize="12" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="ⓘ" TextColor="{AppThemeBinding Light=#4F46E5, Dark=#A5B4FC}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="saldo" />
                                     </Label.GestureRecognizers>
                                 </Label>
                             </Grid>
-                            <Label Text="{Binding Saldo, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                            <Label Text="{Binding Saldo, StringFormat='R$ {0:N2}'}" TextColor="{AppThemeBinding Light=#1E1B4B, Dark=White}" FontSize="20" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#065F46" Grid.Row="1" Grid.Column="0" Padding="12">
+                    <Border Style="{StaticResource CardBorderStyle}"
+                            BackgroundColor="{AppThemeBinding Light=#ECFDF5, Dark=#064E3B}"
+                            Stroke="{AppThemeBinding Light=#A7F3D0, Dark=#047857}"
+                            Grid.Row="1" Grid.Column="0" Padding="12">
                         <VerticalStackLayout Spacing="2">
                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                                <Label Text="Receitas do Mês" TextColor="#D1FAE5" FontSize="12" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="ⓘ" TextColor="#D1FAE5" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
+                                <Label Text="Receitas do Mês" TextColor="{AppThemeBinding Light=#059669, Dark=#D1FAE5}" FontSize="12" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="ⓘ" TextColor="{AppThemeBinding Light=#059669, Dark=#D1FAE5}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="receitas" />
                                     </Label.GestureRecognizers>
                                 </Label>
                             </Grid>
-                            <Label Text="{Binding ReceitasMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                            <Label Text="{Binding ReceitasMes, StringFormat='R$ {0:N2}'}" TextColor="{AppThemeBinding Light=#047857, Dark=White}" FontSize="20" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#991B1B" Grid.Row="1" Grid.Column="1" Padding="12">
+                    <Border Style="{StaticResource CardBorderStyle}"
+                            BackgroundColor="{AppThemeBinding Light=#FEF2F2, Dark=#7F1D1D}"
+                            Stroke="{AppThemeBinding Light=#FECACA, Dark=#991B1B}"
+                            Grid.Row="1" Grid.Column="1" Padding="12">
                         <VerticalStackLayout Spacing="2">
                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                                <Label Text="Despesas do Mês" TextColor="#FEE2E2" FontSize="12" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="ⓘ" TextColor="#FEE2E2" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
+                                <Label Text="Despesas do Mês" TextColor="{AppThemeBinding Light=#DC2626, Dark=#FEE2E2}" FontSize="12" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="ⓘ" TextColor="{AppThemeBinding Light=#DC2626, Dark=#FEE2E2}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="despesas" />
                                     </Label.GestureRecognizers>
                                 </Label>
                             </Grid>
-                            <Label Text="{Binding DespesasMes, StringFormat='R$ {0:N2}'}" TextColor="White" FontSize="20" FontAttributes="Bold" />
+                            <Label Text="{Binding DespesasMes, StringFormat='R$ {0:N2}'}" TextColor="{AppThemeBinding Light=#B91C1C, Dark=White}" FontSize="20" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#451A03" Grid.Row="2" Grid.Column="0" Padding="12">
+                    <Border Style="{StaticResource CardBorderStyle}"
+                            BackgroundColor="{AppThemeBinding Light=#FFFBEB, Dark=#451A03}"
+                            Stroke="{AppThemeBinding Light=#FDE68A, Dark=#78350F}"
+                            Grid.Row="2" Grid.Column="0" Padding="12">
                         <VerticalStackLayout Spacing="2">
                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                                <Label Text="A Pagar (Pendente)" TextColor="#FDE68A" FontSize="12" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="ⓘ" TextColor="#FDE68A" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
+                                <Label Text="A Pagar (Pendente)" TextColor="{AppThemeBinding Light=#D97706, Dark=#FDE68A}" FontSize="12" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="ⓘ" TextColor="{AppThemeBinding Light=#D97706, Dark=#FDE68A}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="pendentes" />
                                     </Label.GestureRecognizers>
                                 </Label>
                             </Grid>
-                            <Label Text="{Binding DespesasPendentesMes, StringFormat='R$ {0:N2}'}" TextColor="#FBBF24" FontSize="18" FontAttributes="Bold" />
+                            <Label Text="{Binding DespesasPendentesMes, StringFormat='R$ {0:N2}'}" TextColor="{AppThemeBinding Light=#B45309, Dark=#FBBF24}" FontSize="18" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="#064E3B" Grid.Row="2" Grid.Column="1" Padding="12">
+                    <Border Style="{StaticResource CardBorderStyle}"
+                            BackgroundColor="{AppThemeBinding Light=#F0FDF4, Dark=#064E3B}"
+                            Stroke="{AppThemeBinding Light=#BBF7D0, Dark=#047857}"
+                            Grid.Row="2" Grid.Column="1" Padding="12">
                         <VerticalStackLayout Spacing="2">
                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                                <Label Text="Já Pago" TextColor="#A7F3D0" FontSize="12" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="ⓘ" TextColor="#A7F3D0" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
+                                <Label Text="Já Pago" TextColor="{AppThemeBinding Light=#16A34A, Dark=#A7F3D0}" FontSize="12" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="ⓘ" TextColor="{AppThemeBinding Light=#16A34A, Dark=#A7F3D0}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="pagas" />
                                     </Label.GestureRecognizers>
                                 </Label>
                             </Grid>
-                            <Label Text="{Binding DespesasPagasMes, StringFormat='R$ {0:N2}'}" TextColor="#34D399" FontSize="18" FontAttributes="Bold" />
+                            <Label Text="{Binding DespesasPagasMes, StringFormat='R$ {0:N2}'}" TextColor="{AppThemeBinding Light=#15803D, Dark=#34D399}" FontSize="18" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
                 </Grid>
 
                 <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#111827}">
                     <VerticalStackLayout Spacing="12">
-                        <Label Text="Adicionar receita" FontSize="20" FontAttributes="Bold" />
-                        <Entry Text="{Binding ReceitaDescricao}" Placeholder="Descrição" />
-                        <Entry Text="{Binding ReceitaValor}" Placeholder="Valor" Keyboard="Numeric" />
-                        <DatePicker Date="{Binding ReceitaData}" />
+                        <Label Text="Adicionar receita" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="20" FontAttributes="Bold" />
+                        <Entry Text="{Binding ReceitaDescricao}" Placeholder="Descrição" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" PlaceholderColor="{AppThemeBinding Light=#94A3B8, Dark=#9CA3AF}" BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#1F2937}" />
+                        <Entry Text="{Binding ReceitaValor}" Placeholder="Valor" Keyboard="Numeric" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" PlaceholderColor="{AppThemeBinding Light=#94A3B8, Dark=#9CA3AF}" BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#1F2937}" />
+                        <DatePicker Date="{Binding ReceitaData}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#1F2937}" />
                         <VerticalStackLayout Spacing="4">
                             <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
                                 <Switch IsToggled="{Binding ReceitaRecebida}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="Já recebi esta receita" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
+                                <Label Grid.Column="1" Text="Já recebi esta receita" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
                             </Grid>
-                            <Label Text="Desmarque caso seja um recebimento futuro (não afetará o saldo até ser recebida)" FontSize="12" TextColor="#6B7280" />
+                            <Label Text="Desmarque caso seja um recebimento futuro (não afetará o saldo até ser recebida)" FontSize="12" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" />
                         </VerticalStackLayout>
                         <HorizontalStackLayout Spacing="12">
-                            <Button Text="Salvar receita" Command="{Binding SalvarReceitaCommand}" />
-                            <Button Text="Cancelar" Command="{Binding CancelarReceitaCommand}" />
+                            <Button Text="Salvar receita" BackgroundColor="#0284C7" TextColor="White" Command="{Binding SalvarReceitaCommand}" />
+                            <Button Text="Cancelar" BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#374151}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" Command="{Binding CancelarReceitaCommand}" />
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </Border>
 
                 <Border Style="{StaticResource CardBorderStyle}" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#111827}">
                     <VerticalStackLayout Spacing="12">
-                        <Label Text="Adicionar despesa" FontSize="20" FontAttributes="Bold" />
-                        <Entry Text="{Binding DespesaDescricao}" Placeholder="Descrição" />
-                        <Entry Text="{Binding DespesaValor}" Placeholder="Valor" Keyboard="Numeric" />
-                        <DatePicker Date="{Binding DespesaData}" />
-                        <DatePicker Date="{Binding DespesaVencimento}" />
+                        <Label Text="Adicionar despesa" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="20" FontAttributes="Bold" />
+                        <Entry Text="{Binding DespesaDescricao}" Placeholder="Descrição" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" PlaceholderColor="{AppThemeBinding Light=#94A3B8, Dark=#9CA3AF}" BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#1F2937}" />
+                        <Entry Text="{Binding DespesaValor}" Placeholder="Valor" Keyboard="Numeric" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" PlaceholderColor="{AppThemeBinding Light=#94A3B8, Dark=#9CA3AF}" BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#1F2937}" />
+                        <DatePicker Date="{Binding DespesaData}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#1F2937}" />
+                        <DatePicker Date="{Binding DespesaVencimento}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" BackgroundColor="{AppThemeBinding Light=#F8FAFC, Dark=#1F2937}" />
                         <VerticalStackLayout Spacing="4">
                             <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
                                 <Switch IsToggled="{Binding DespesaRecorrente}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="Despesa recorrente" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
+                                <Label Grid.Column="1" Text="Despesa recorrente" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
                             </Grid>
-                            <Label Text="Ative caso essa despesa se repete todo mês" FontSize="12" TextColor="#6B7280" />
+                            <Label Text="Ative caso essa despesa se repete todo mês" FontSize="12" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" />
                         </VerticalStackLayout>
                         <VerticalStackLayout Spacing="4">
                             <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
                                 <Switch IsToggled="{Binding DespesaPaga}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="Despesa já paga" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
+                                <Label Grid.Column="1" Text="Despesa já paga" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
                             </Grid>
-                            <Label Text="Marque se esta conta já foi quitada" FontSize="12" TextColor="#6B7280" />
+                            <Label Text="Marque se esta conta já foi quitada" FontSize="12" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" />
                         </VerticalStackLayout>
                         <HorizontalStackLayout Spacing="12">
-                            <Button Text="Salvar despesa" Command="{Binding SalvarDespesaCommand}" />
-                            <Button Text="Cancelar" Command="{Binding CancelarDespesaCommand}" />
+                            <Button Text="Salvar despesa" BackgroundColor="#0284C7" TextColor="White" Command="{Binding SalvarDespesaCommand}" />
+                            <Button Text="Cancelar" BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#374151}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" Command="{Binding CancelarDespesaCommand}" />
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </Border>
 
                 <VerticalStackLayout Spacing="16">
                     <VerticalStackLayout Spacing="8">
-                        <Label Text="Despesas do mês" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="Despesas do mês" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="18" FontAttributes="Bold" />
                         <CollectionView ItemsSource="{Binding DespesasRecentes}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="models:Despesa">
-                                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,8" Padding="14,10" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}">
+                                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,8" Padding="14,10"
+                                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}"
+                                            Stroke="{AppThemeBinding Light=#E2E8F0, Dark=#374151}">
                                         <VerticalStackLayout Spacing="6">
                                             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
                                                 <!-- Badge Interativo de Status Paga/Pendente -->
                                                 <Border Grid.Column="0"
                                                         StrokeThickness="0"
                                                         Padding="8,3"
-                                                        VerticalOptions="Center">
+                                                        VerticalOptions="Center"
+                                                        BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#1F2937}">
                                                     <Border.StrokeShape>
                                                         <RoundRectangle CornerRadius="6" />
                                                     </Border.StrokeShape>
-                                                    <Border.Triggers>
-                                                        <DataTrigger TargetType="Border" Binding="{Binding Paga}" Value="True">
-                                                            <Setter Property="BackgroundColor" Value="#064E3B" />
-                                                        </DataTrigger>
-                                                        <DataTrigger TargetType="Border" Binding="{Binding Paga}" Value="False">
-                                                            <Setter Property="BackgroundColor" Value="#451A03" />
-                                                        </DataTrigger>
-                                                    </Border.Triggers>
                                                     <Border.GestureRecognizers>
                                                         <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=AlternarStatusPagamentoCommand}"
-                                                                             CommandParameter="{Binding .}" />
+                                                                              CommandParameter="{Binding .}" />
                                                     </Border.GestureRecognizers>
                                                     <Label FontSize="10" FontAttributes="Bold" VerticalOptions="Center">
                                                         <Label.Triggers>
                                                             <DataTrigger TargetType="Label" Binding="{Binding Paga}" Value="True">
                                                                 <Setter Property="Text" Value="✓ PAGA" />
-                                                                <Setter Property="TextColor" Value="#34D399" />
+                                                                <Setter Property="TextColor" Value="#16A34A" />
                                                             </DataTrigger>
                                                             <DataTrigger TargetType="Label" Binding="{Binding Paga}" Value="False">
                                                                 <Setter Property="Text" Value="⏳ PENDENTE" />
-                                                                <Setter Property="TextColor" Value="#FBBF24" />
+                                                                <Setter Property="TextColor" Value="#D97706" />
                                                             </DataTrigger>
                                                         </Label.Triggers>
                                                     </Label>
                                                 </Border>
 
-                                                <Label Grid.Column="1" Text="{Binding Descricao}" FontAttributes="Bold" FontSize="15" LineBreakMode="TailTruncation" VerticalOptions="Center" />
-                                                <Label Grid.Column="2" Text="{Binding Valor, StringFormat='- R$ {0:N2}'}" TextColor="#F87171" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
+                                                <Label Grid.Column="1" Text="{Binding Descricao}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontAttributes="Bold" FontSize="15" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                                <Label Grid.Column="2" Text="{Binding Valor, StringFormat='- R$ {0:N2}'}" TextColor="{AppThemeBinding Light=#DC2626, Dark=#F87171}" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
                                             </Grid>
                                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
                                                 <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                                    <Label Text="{Binding Vencimento, StringFormat='Venc.: {0:dd/MM/yyyy}'}" FontSize="12" TextColor="#9CA3AF" VerticalOptions="Center" />
-                                                    <Label Text="• Recorrente" FontSize="11" TextColor="#A78BFA" IsVisible="{Binding Recorrente}" VerticalOptions="Center" />
+                                                    <Label Text="{Binding Vencimento, StringFormat='Venc.: {0:dd/MM/yyyy}'}" FontSize="12" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" VerticalOptions="Center" />
+                                                    <Label Text="• Recorrente" FontSize="11" TextColor="#8B5CF6" IsVisible="{Binding Recorrente}" VerticalOptions="Center" />
                                                 </HorizontalStackLayout>
                                                 <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                                                     <Button Text="Editar" HeightRequest="30" Padding="12,0" FontSize="11" CornerRadius="6"
-                                                            BackgroundColor="#2563EB" TextColor="White"
+                                                            BackgroundColor="#0284C7" TextColor="White"
                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=EditarDespesaCommand}"
                                                             CommandParameter="{Binding .}" />
                                                     <Button Text="Excluir" HeightRequest="30" Padding="12,0" FontSize="11" CornerRadius="6"
@@ -283,52 +322,48 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="8">
-                        <Label Text="Receitas do mês" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="Receitas do mês" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="18" FontAttributes="Bold" />
                         <CollectionView ItemsSource="{Binding ReceitasRecentes}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="models:Receita">
-                                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,8" Padding="14,10" BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}">
+                                    <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,8" Padding="14,10"
+                                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}"
+                                            Stroke="{AppThemeBinding Light=#E2E8F0, Dark=#374151}">
                                         <VerticalStackLayout Spacing="6">
                                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
                                                 <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                                                    <Border StrokeThickness="0" Padding="6,2" VerticalOptions="Center">
+                                                    <Border StrokeThickness="0" Padding="6,2" VerticalOptions="Center"
+                                                            BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#1F2937}">
                                                         <Border.StrokeShape>
                                                             <RoundRectangle CornerRadius="6" />
                                                         </Border.StrokeShape>
-                                                        <Border.Triggers>
-                                                            <DataTrigger TargetType="Border" Binding="{Binding Recebida}" Value="True">
-                                                                <Setter Property="BackgroundColor" Value="#064E3B" />
-                                                            </DataTrigger>
-                                                            <DataTrigger TargetType="Border" Binding="{Binding Recebida}" Value="False">
-                                                                <Setter Property="BackgroundColor" Value="#78350F" />
-                                                            </DataTrigger>
-                                                        </Border.Triggers>
                                                         <Label FontSize="10" FontAttributes="Bold" VerticalOptions="Center">
                                                             <Label.Triggers>
                                                                 <DataTrigger TargetType="Label" Binding="{Binding Recebida}" Value="True">
                                                                     <Setter Property="Text" Value="✓ RECEBIDO" />
-                                                                    <Setter Property="TextColor" Value="#34D399" />
+                                                                    <Setter Property="TextColor" Value="#16A34A" />
                                                                 </DataTrigger>
                                                                 <DataTrigger TargetType="Label" Binding="{Binding Recebida}" Value="False">
                                                                     <Setter Property="Text" Value="⏳ A RECEBER" />
-                                                                    <Setter Property="TextColor" Value="#FBBF24" />
+                                                                    <Setter Property="TextColor" Value="#D97706" />
                                                                 </DataTrigger>
                                                             </Label.Triggers>
                                                         </Label>
                                                     </Border>
-                                                    <Label Text="{Binding Descricao}" FontAttributes="Bold" FontSize="15" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                                    <Label Text="{Binding Descricao}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontAttributes="Bold" FontSize="15" LineBreakMode="TailTruncation" VerticalOptions="Center" />
                                                 </HorizontalStackLayout>
-                                                <Label Grid.Column="1" Text="{Binding Valor, StringFormat='+ R$ {0:N2}'}" TextColor="#34D399" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
+                                                <Label Grid.Column="1" Text="{Binding Valor, StringFormat='+ R$ {0:N2}'}" TextColor="{AppThemeBinding Light=#059669, Dark=#34D399}" FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
                                             </Grid>
                                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                                                <Label Text="{Binding Data, StringFormat='{0:dd/MM/yyyy}'}" FontSize="12" TextColor="#9CA3AF" VerticalOptions="Center" />
+                                                <Label Text="{Binding Data, StringFormat='{0:dd/MM/yyyy}'}" FontSize="12" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" VerticalOptions="Center" />
                                                 <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                                                     <Button Text="Alternar" HeightRequest="30" Padding="10,0" FontSize="11" CornerRadius="6"
-                                                            BackgroundColor="#059669" TextColor="White"
+                                                            BackgroundColor="{AppThemeBinding Light=#F1F5F9, Dark=#374151}"
+                                                            TextColor="{AppThemeBinding Light=#0F172A, Dark=White}"
                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=AlternarRecebimentoReceitaCommand}"
                                                             CommandParameter="{Binding .}" />
                                                     <Button Text="Editar" HeightRequest="30" Padding="12,0" FontSize="11" CornerRadius="6"
-                                                            BackgroundColor="#2563EB" TextColor="White"
+                                                            BackgroundColor="#0284C7" TextColor="White"
                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=EditarReceitaCommand}"
                                                             CommandParameter="{Binding .}" />
                                                     <Button Text="Excluir" HeightRequest="30" Padding="12,0" FontSize="11" CornerRadius="6"

@@ -36,6 +36,9 @@ public partial class MainViewModel : ObservableObject
     public partial DateTime DataReferencia { get; set; } = DateTime.Today;
 
     [ObservableProperty]
+    public partial bool IsDarkTheme { get; set; } = true;
+
+    [ObservableProperty]
     public partial string MesAnoTexto { get; set; } = string.Empty;
 
     [ObservableProperty]
@@ -170,7 +173,23 @@ public partial class MainViewModel : ObservableObject
         _syncService = syncService;
         _updateService = updateService;
         _dialogService = dialogService;
+        IsDarkTheme = Preferences.Get("app_theme", "Dark") != "Light";
         AtualizarTextoMes();
+    }
+
+    public string ThemeToggleIcon => IsDarkTheme ? "☀️" : "🌙";
+    public string ThemeToggleImage => IsDarkTheme ? "ic_sun_yellow.png" : "ic_moon_blue.png";
+
+    [RelayCommand]
+    public void ToggleTheme()
+    {
+        var isCurrentlyDark = Application.Current?.UserAppTheme != AppTheme.Light;
+        var newTheme = isCurrentlyDark ? AppTheme.Light : AppTheme.Dark;
+        if (Application.Current != null) Application.Current.UserAppTheme = newTheme;
+        Preferences.Set("app_theme", newTheme == AppTheme.Light ? "Light" : "Dark");
+        IsDarkTheme = newTheme == AppTheme.Dark;
+        OnPropertyChanged(nameof(ThemeToggleIcon));
+        OnPropertyChanged(nameof(ThemeToggleImage));
     }
 
     [RelayCommand]
@@ -193,7 +212,9 @@ public partial class MainViewModel : ObservableObject
         TotalDespesas = await _financeService.GetTotalDespesasAsync();
         TotalCategorias = categorias.Count;
 
-        ReceitasMes = receitasDoMes.Sum(r => r.Valor);
+        var totalReceitasRecebidas = receitasDoMes.Where(r => r.Recebida).Sum(r => r.Valor);
+        TotalReceitasPendentes = receitasDoMes.Where(r => !r.Recebida).Sum(r => r.Valor);
+        ReceitasMes = totalReceitasRecebidas;
         DespesasMes = despesasDoMes.Sum(d => d.Valor);
         BalancoMes = ReceitasMes - DespesasMes;
         DespesasPagasMes = despesasDoMes.Where(d => d.Paga).Sum(d => d.Valor);
