@@ -35,10 +35,41 @@ public class ChangelogService
     [
         new VersaoInfo
         {
+            Numero = "v1.0.20",
+            DataLancamento = "03/09/2026",
+            Titulo = "Correções na Sincronização e Backups",
+            IsAtual = true,
+            Destaques =
+            [
+                new DestaqueInfo
+                {
+                    Tipo = "Ajuste",
+                    Titulo = "Restauração de Backup",
+                    Descricao = "Seletor de arquivo JSON corrigido para abrir instantaneamente no Windows.",
+                    Icone = "📂"
+                },
+                new DestaqueInfo
+                {
+                    Tipo = "Melhoria",
+                    Titulo = "Exportação de Backup Físico",
+                    Descricao = "Salva uma cópia na pasta Downloads e abre o Windows Explorer com o arquivo em destaque.",
+                    Icone = "💾"
+                },
+                new DestaqueInfo
+                {
+                    Tipo = "Ajuste",
+                    Titulo = "Login e Sincronização Google",
+                    Descricao = "Botão de login responsivo ao clique em qualquer ponto e sincronização estabilizada.",
+                    Icone = "🔄"
+                }
+            ]
+        },
+        new VersaoInfo
+        {
             Numero = "v1.0.18",
             DataLancamento = "02/09/2026",
             Titulo = "Desempenho e Fluidez Aprimorados",
-            IsAtual = true,
+            IsAtual = false,
             Destaques =
             [
                 new DestaqueInfo
