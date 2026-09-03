@@ -141,7 +141,7 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding ConectarGoogleCommand}" />
                             </Border.GestureRecognizers>
-                            <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                            <HorizontalStackLayout Spacing="12" VerticalOptions="Center" InputTransparent="True" CascadeInputTransparent="True">
                                 <Image Source="google_logo.png"
                                        WidthRequest="22"
                                        HeightRequest="22"

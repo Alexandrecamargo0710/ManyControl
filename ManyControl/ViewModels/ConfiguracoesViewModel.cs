@@ -261,7 +261,46 @@ public partial class ConfiguracoesViewModel : ObservableObject
         {
             var result = await _syncService.ExportAsync();
             await AtualizarStatusAsync();
-            await _dialogService.ShowAlertAsync("Backup Local", $"{result.Message}\n\nArquivo salvo em:\n{LocalSyncPath}", "OK");
+
+            string? downloadPath = null;
+            try
+            {
+                var userDownloads = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+                if (Directory.Exists(userDownloads))
+                {
+                    var backupFileName = $"manycontrol-backup-{DateTime.Now:yyyy-MM-dd-HHmm}.json";
+                    downloadPath = Path.Combine(userDownloads, backupFileName);
+                    File.Copy(LocalSyncPath, downloadPath, true);
+                }
+            }
+            catch
+            {
+                // Fallback silencioso caso Downloads tenha restrição
+            }
+
+            var filePathToOpen = downloadPath ?? LocalSyncPath;
+
+            try
+            {
+                if (File.Exists(filePathToOpen))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"/select,\"{filePathToOpen}\"",
+                        UseShellExecute = true
+                    });
+                }
+            }
+            catch
+            {
+            }
+
+            var msg = downloadPath is not null
+                ? $"Backup exportado com sucesso!\n\nArquivo salvo na sua pasta Downloads:\n{downloadPath}"
+                : $"Backup exportado com sucesso!\n\nArquivo salvo em:\n{LocalSyncPath}";
+
+            await _dialogService.ShowAlertAsync("Backup Local", msg, "OK");
         }
         catch (Exception ex)
         {
@@ -291,6 +330,15 @@ public partial class ConfiguracoesViewModel : ObservableObject
             await _dialogService.ShowAlertAsync("Erro", ex.Message, "OK");
         }
     }
+
+    [RelayCommand]
+    public async Task SincronizarAgoraAsync() => await SincronizarAsync();
+
+    [RelayCommand]
+    public async Task ExportarBackupLocalAsync() => await ExportarBackupManualAsync();
+
+    [RelayCommand]
+    public async Task ImportarBackupLocalAsync() => await ImportarBackupManualAsync();
 
     [RelayCommand]
     public async Task VerificarAtualizacoesAsync()

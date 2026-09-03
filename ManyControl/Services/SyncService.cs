@@ -73,7 +73,7 @@ public class SyncService
 
     public async Task<SyncResult> SyncAsync()
     {
-        if (_googleDriveService.IsConfigured)
+        if (_googleDriveService.IsConnected)
         {
             return await SyncWithGoogleDriveAsync();
         }

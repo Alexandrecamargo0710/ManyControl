@@ -2,51 +2,90 @@ namespace ManyControl.Services;
 
 public class DialogService : IDialogService
 {
-    private static Page? CurrentPage => Application.Current?.Windows.FirstOrDefault()?.Page;
+    private static Page? CurrentPage
+    {
+        get
+        {
+            if (Shell.Current?.CurrentPage is Page shellPage)
+            {
+                return shellPage;
+            }
+            return Application.Current?.Windows.FirstOrDefault()?.Page;
+        }
+    }
 
     public async Task ShowAlertAsync(string title, string message, string cancel = "OK")
     {
-        if (CurrentPage is not null)
+        await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            await CurrentPage.DisplayAlertAsync(title, message, cancel);
-        }
+            var page = CurrentPage;
+            if (page is not null)
+            {
+                await page.DisplayAlertAsync(title, message, cancel);
+            }
+        });
     }
 
     public async Task<bool> ShowConfirmationAsync(string title, string message, string accept, string cancel)
     {
-        if (CurrentPage is not null)
+        return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            return await CurrentPage.DisplayAlertAsync(title, message, accept, cancel);
-        }
+            var page = CurrentPage;
+            if (page is not null)
+            {
+                return await page.DisplayAlertAsync(title, message, accept, cancel);
+            }
 
-        return false;
+            return false;
+        });
     }
 
     public async Task<string> ShowPromptAsync(string title, string message, string accept = "Continuar", string cancel = "Cancelar", string? initialValue = null)
     {
-        if (CurrentPage is not null)
+        return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            return await CurrentPage.DisplayPromptAsync(title, message, accept, cancel, initialValue: initialValue) ?? string.Empty;
-        }
+            var page = CurrentPage;
+            if (page is not null)
+            {
+                return await page.DisplayPromptAsync(title, message, accept, cancel, initialValue: initialValue) ?? string.Empty;
+            }
 
-        return string.Empty;
+            return string.Empty;
+        });
     }
 
     public async Task<string?> ShowActionSheetAsync(string title, string cancel, string? destruction, params string[] buttons)
     {
-        if (CurrentPage is not null)
+        return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            return await CurrentPage.DisplayActionSheetAsync(title, cancel, destruction, buttons);
-        }
+            var page = CurrentPage;
+            if (page is not null)
+            {
+                return await page.DisplayActionSheetAsync(title, cancel, destruction, buttons);
+            }
 
-        return null;
+            return null;
+        });
     }
 
     public async Task<FileResult?> PickFileAsync(string pickerTitle)
     {
-        return await FilePicker.Default.PickAsync(new PickOptions
+        return await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            PickerTitle = pickerTitle
+            var jsonFileType = new FilePickerFileType(
+                new Dictionary<DevicePlatform, IEnumerable<string>>
+                {
+                    { DevicePlatform.WinUI, new[] { ".json" } },
+                    { DevicePlatform.Android, new[] { "application/json", "text/json" } },
+                    { DevicePlatform.iOS, new[] { "public.json" } },
+                    { DevicePlatform.MacCatalyst, new[] { "public.json" } }
+                });
+
+            return await FilePicker.Default.PickAsync(new PickOptions
+            {
+                PickerTitle = pickerTitle,
+                FileTypes = jsonFileType
+            });
         });
     }
 }
