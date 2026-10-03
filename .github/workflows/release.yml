@@ -33,8 +33,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
+
 
       - name: Instalar Inno Setup (para Windows Installer)
         run: |
