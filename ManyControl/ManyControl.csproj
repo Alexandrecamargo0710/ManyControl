@@ -42,8 +42,8 @@
 		<ApplicationId>com.companyname.manycontrol</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.0.21</ApplicationDisplayVersion>
-		<ApplicationVersion>22</ApplicationVersion>
+		<ApplicationDisplayVersion>1.0.22</ApplicationDisplayVersion>
+		<ApplicationVersion>23</ApplicationVersion>
 
 		<!-- Windows App Icon -->
 		<ApplicationIcon>appicon.ico</ApplicationIcon>
@@ -67,7 +67,7 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.png" />
+		<MauiIcon Include="Resources\AppIcon\appicon.png" Color="#111827" BaseSize="128,128" />
 
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#111827" BaseSize="128,128" />
