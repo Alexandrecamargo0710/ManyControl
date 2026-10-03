@@ -35,6 +35,37 @@ public class ChangelogService
     [
         new VersaoInfo
         {
+            Numero = "v1.0.24",
+            DataLancamento = "03/10/2026",
+            Titulo = "Novo Ícone e Despesas Inteligentes",
+            IsAtual = true,
+            Destaques =
+            [
+                new DestaqueInfo
+                {
+                    Tipo = "Novidade",
+                    Titulo = "Despesas Recorrentes em Lote",
+                    Descricao = "Agora você define a quantidade de repetições ao criar a conta e o sistema gera os meses futuros instantaneamente.",
+                    Icone = "🔁"
+                },
+                new DestaqueInfo
+                {
+                    Tipo = "Melhoria",
+                    Titulo = "Edição Inteligente de Assinaturas",
+                    Descricao = "Altere valor, categoria ou nome de uma parcela e o sistema perguntará se deseja aplicar para os próximos meses.",
+                    Icone = "🧠"
+                },
+                new DestaqueInfo
+                {
+                    Tipo = "Ajuste",
+                    Titulo = "Novo Ícone do App",
+                    Descricao = "O aplicativo agora conta com o novo ícone oficial sem fundo branco ao redor.",
+                    Icone = "✨"
+                }
+            ]
+        },
+        new VersaoInfo
+        {
             Numero = "v1.0.20",
             DataLancamento = "03/09/2026",
             Titulo = "Correções na Sincronização e Backups",
