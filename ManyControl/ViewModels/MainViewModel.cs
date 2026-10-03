@@ -121,6 +121,9 @@ public partial class MainViewModel : ObservableObject
     public partial bool DespesaRecorrente { get; set; }
 
     [ObservableProperty]
+    public partial int RepetirMeses { get; set; } = 2;
+
+    [ObservableProperty]
     public partial bool DespesaPaga { get; set; }
 
     // Modal de Edição (Overlay)
@@ -384,13 +387,15 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
+        int repetir = DespesaRecorrente ? RepetirMeses : 1;
+
         await _financeService.AddDespesaAsync(
             DespesaDescricao.Trim(),
             valor,
             DespesaData,
             null,
             DespesaVencimento,
-            DespesaRecorrente,
+            repetir,
             DespesaPaga);
 
         LimparFormularioDespesa();
@@ -565,7 +570,17 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        await _financeService.DeleteDespesaAsync(despesa.Id);
+        bool excluirFuturas = false;
+        if (despesa.GrupoId.HasValue)
+        {
+            excluirFuturas = await _dialogService.ShowConfirmationAsync(
+                "Excluir parcelas futuras?",
+                "Esta despesa faz parte de um grupo. Deseja excluir APENAS esta despesa ou também TODAS as parcelas futuras?",
+                "Todas as futuras",
+                "Apenas esta");
+        }
+
+        await _financeService.DeleteDespesaAsync(despesa.Id, excluirFuturas);
         if (_editingDespesaId == despesa.Id)
         {
             FecharEdicaoModal();
@@ -601,6 +616,17 @@ public partial class MainViewModel : ObservableObject
         }
         else if (_currentEditMode == EditMode.Despesa && _editingDespesaId.HasValue)
         {
+            bool atualizarFuturas = false;
+            var despesa = await _financeService.GetDespesaAsync(_editingDespesaId.Value);
+            if (despesa != null && despesa.GrupoId.HasValue)
+            {
+                atualizarFuturas = await _dialogService.ShowConfirmationAsync(
+                    "Atualizar parcelas futuras?",
+                    "Deseja aplicar essa alteração apenas a esta despesa ou também a todas as parcelas futuras deste grupo?",
+                    "Também às futuras",
+                    "Apenas a esta");
+            }
+
             await _financeService.UpdateDespesaAsync(
                 _editingDespesaId.Value,
                 EditDescricao.Trim(),
@@ -608,7 +634,7 @@ public partial class MainViewModel : ObservableObject
                 EditData,
                 null,
                 EditVencimento,
-                EditRecorrente,
+                atualizarFuturas,
                 EditPaga);
         }
         else

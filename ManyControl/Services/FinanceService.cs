@@ -105,109 +105,12 @@ public class FinanceService
 
     public async Task<int> ProcessarDespesasRecorrentesAsync(DateTime dataReferencia)
     {
-        var hoje = DateTime.Today;
-
-        // Limite de segurança: nunca gerar despesas no banco para meses futuros além do mês atual!
-        if (dataReferencia.Year > hoje.Year || (dataReferencia.Year == hoje.Year && dataReferencia.Month > hoje.Month))
-        {
-            return 0;
-        }
-
-        await using var context = await _contextFactory.CreateDbContextAsync();
-
-        var anoAlvo = dataReferencia.Year;
-        var mesAlvo = dataReferencia.Month;
-
-        var recorrentes = await context.Despesas
-            .Where(d => d.DeletedAt == null && d.Recorrente)
-            .ToListAsync();
-
-        if (recorrentes.Count == 0)
-        {
-            return 0;
-        }
-
-        // Busca todas as despesas do mês alvo (incluindo deletadas) para respeitar exclusões manuais
-        var despesasDoMesAlvo = await context.Despesas
-            .Where(d => d.Data.Year == anoAlvo && d.Data.Month == mesAlvo)
-            .Select(d => d.Descricao.Trim().ToLower())
-            .ToListAsync();
-
-        var grupos = recorrentes
-            .GroupBy(d => d.Descricao.Trim().ToLowerInvariant())
-            .ToList();
-
-        var novosInseridos = 0;
-
-        foreach (var grupo in grupos)
-        {
-            var descricaoNorm = grupo.Key;
-
-            // Se já existe uma despesa com esse nome no mês alvo (mesmo se foi deletada), não recria
-            if (despesasDoMesAlvo.Contains(descricaoNorm))
-            {
-                continue;
-            }
-
-            var modelo = grupo.OrderByDescending(d => d.Data).First();
-            var dataModelo = new DateTime(modelo.Data.Year, modelo.Data.Month, 1);
-            var dataAlvoMes = new DateTime(anoAlvo, mesAlvo, 1);
-
-            if (dataModelo >= dataAlvoMes)
-            {
-                continue;
-            }
-
-            var diasNoMes = DateTime.DaysInMonth(anoAlvo, mesAlvo);
-            var diaData = Math.Min(modelo.Data.Day, diasNoMes);
-            var novaData = new DateTime(anoAlvo, mesAlvo, diaData);
-
-            DateTime? novoVencimento = null;
-            if (modelo.Vencimento.HasValue)
-            {
-                var diaVenc = Math.Min(modelo.Vencimento.Value.Day, diasNoMes);
-                novoVencimento = new DateTime(anoAlvo, mesAlvo, diaVenc);
-            }
-
-            context.Despesas.Add(new Despesa
-            {
-                Id = Guid.NewGuid(),
-                Descricao = modelo.Descricao,
-                Valor = modelo.Valor,
-                Data = novaData,
-                Vencimento = novoVencimento,
-                CategoriaId = modelo.CategoriaId,
-                Recorrente = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            });
-
-            novosInseridos++;
-        }
-
-        if (novosInseridos > 0)
-        {
-            await context.SaveChangesAsync();
-        }
-
-        return novosInseridos;
+        return await Task.FromResult(0);
     }
 
     public async Task LimparDespesasRecorrentesFuturasAsync()
     {
-        await using var context = await _contextFactory.CreateDbContextAsync();
-        var hoje = DateTime.Today;
-        var proximoMes = new DateTime(hoje.Year, hoje.Month, 1).AddMonths(1);
-
-        var futuras = await context.Despesas
-            .Where(d => d.Data >= proximoMes && d.Recorrente)
-            .ToListAsync();
-
-        if (futuras.Count > 0)
-        {
-            context.Despesas.RemoveRange(futuras);
-            await context.SaveChangesAsync();
-        }
+        await Task.CompletedTask;
     }
 
     public async Task<decimal> GetTotalReceitasAsync()
@@ -384,29 +287,44 @@ public class FinanceService
         await context.SaveChangesAsync();
     }
 
-    public async Task AddDespesaAsync(string descricao, decimal valor, DateTime data, Guid? categoriaId, DateTime? vencimento, bool recorrente, bool paga = false)
+    public async Task AddDespesaAsync(string descricao, decimal valor, DateTime data, Guid? categoriaId, DateTime? vencimento, int repetirMeses = 1, bool paga = false)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
-        context.Despesas.Add(new Despesa
+        Guid? grupoId = repetirMeses > 1 ? Guid.NewGuid() : null;
+
+        for (int i = 0; i < Math.Max(1, repetirMeses); i++)
         {
-            Id = Guid.NewGuid(),
-            Descricao = descricao,
-            Valor = valor,
-            Data = data,
-            CategoriaId = categoriaId,
-            Vencimento = vencimento,
-            Recorrente = recorrente,
-            Paga = paga,
-            DataPagamento = paga ? DateTime.Now : null,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        });
+            var dataIteracao = data.AddMonths(i);
+            var vencimentoIteracao = vencimento?.AddMonths(i);
+
+            context.Despesas.Add(new Despesa
+            {
+                Id = Guid.NewGuid(),
+                Descricao = descricao,
+                Valor = valor,
+                Data = dataIteracao,
+                CategoriaId = categoriaId,
+                Vencimento = vencimentoIteracao,
+                Recorrente = false, // Mantido apenas para compatibilidade, o conceito novo usa GrupoId
+                GrupoId = grupoId,
+                Paga = i == 0 ? paga : false, // Só marca como paga a primeira parcela, se solicitado
+                DataPagamento = (i == 0 && paga) ? DateTime.Now : null,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            });
+        }
 
         await context.SaveChangesAsync();
     }
 
-    public async Task UpdateDespesaAsync(Guid id, string descricao, decimal valor, DateTime data, Guid? categoriaId, DateTime? vencimento, bool recorrente, bool? paga = null)
+    public async Task<Despesa?> GetDespesaAsync(Guid id)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        return await context.Despesas.FirstOrDefaultAsync(d => d.Id == id && d.DeletedAt == null);
+    }
+
+    public async Task UpdateDespesaAsync(Guid id, string descricao, decimal valor, DateTime data, Guid? categoriaId, DateTime? vencimento, bool atualizarFuturas = false, bool? paga = null)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
@@ -416,18 +334,38 @@ public class FinanceService
             return;
         }
 
+        // Atualiza a despesa atual
         despesa.Descricao = descricao;
         despesa.Valor = valor;
         despesa.Data = data;
         despesa.CategoriaId = categoriaId;
         despesa.Vencimento = vencimento;
-        despesa.Recorrente = recorrente;
+        
         if (paga.HasValue)
         {
             despesa.Paga = paga.Value;
             despesa.DataPagamento = paga.Value ? (despesa.DataPagamento ?? DateTime.Now) : null;
         }
         despesa.UpdatedAt = DateTime.UtcNow;
+
+        // Se solicitado e houver GrupoId, atualiza as parcelas futuras
+        if (atualizarFuturas && despesa.GrupoId.HasValue)
+        {
+            var futuras = await context.Despesas
+                .Where(d => d.GrupoId == despesa.GrupoId && d.Data > despesa.Data && d.Id != despesa.Id && d.DeletedAt == null)
+                .ToListAsync();
+
+            foreach (var futura in futuras)
+            {
+                futura.Descricao = descricao;
+                futura.Valor = valor;
+                futura.CategoriaId = categoriaId;
+                // Calculamos a diferença em meses entre a data editada e a original da parcela futura
+                // Para manter a coerência de vencimento. Mas o jeito mais fácil é só não mexer no dia.
+                // Vou deixar Data e Vencimento como estavam (as futuras mantêm seus próprios meses).
+                futura.UpdatedAt = DateTime.UtcNow;
+            }
+        }
 
         await context.SaveChangesAsync();
     }
@@ -449,7 +387,7 @@ public class FinanceService
         await context.SaveChangesAsync();
     }
 
-    public async Task DeleteDespesaAsync(Guid id)
+    public async Task DeleteDespesaAsync(Guid id, bool excluirFuturas = false)
     {
         await using var context = await _contextFactory.CreateDbContextAsync();
 
@@ -461,6 +399,20 @@ public class FinanceService
 
         despesa.DeletedAt = DateTime.UtcNow;
         despesa.UpdatedAt = despesa.DeletedAt.Value;
+
+        if (excluirFuturas && despesa.GrupoId.HasValue)
+        {
+            var futuras = await context.Despesas
+                .Where(d => d.GrupoId == despesa.GrupoId && d.Data > despesa.Data && d.Id != despesa.Id && d.DeletedAt == null)
+                .ToListAsync();
+
+            foreach (var futura in futuras)
+            {
+                futura.DeletedAt = DateTime.UtcNow;
+                futura.UpdatedAt = futura.DeletedAt.Value;
+            }
+        }
+
         await context.SaveChangesAsync();
     }
 

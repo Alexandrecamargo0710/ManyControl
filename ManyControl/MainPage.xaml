@@ -239,9 +239,14 @@
                         <VerticalStackLayout Spacing="4">
                             <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
                                 <Switch IsToggled="{Binding DespesaRecorrente}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="Despesa recorrente" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
+                                <Label Grid.Column="1" Text="Repetir nos próximos meses?" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
                             </Grid>
-                            <Label Text="Ative caso essa despesa se repete todo mês" FontSize="12" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" />
+                            <Label Text="Ative para gerar parcelas para os meses futuros" FontSize="12" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" />
+                            
+                            <VerticalStackLayout IsVisible="{Binding DespesaRecorrente}" Spacing="4" Margin="0,8,0,0">
+                                <Label Text="{Binding RepetirMeses, StringFormat='Repetir por {0} meses'}" FontSize="14" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" />
+                                <Stepper Minimum="2" Maximum="120" Increment="1" Value="{Binding RepetirMeses}" HorizontalOptions="Start" />
+                            </VerticalStackLayout>
                         </VerticalStackLayout>
                         <VerticalStackLayout Spacing="4">
                             <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
@@ -403,13 +408,7 @@
                         <Label Text="Desmarque caso seja um recebimento futuro" FontSize="12" TextColor="#6B7280" />
                     </VerticalStackLayout>
 
-                    <VerticalStackLayout IsVisible="{Binding IsEditRecorrenteVisible}" Spacing="4">
-                        <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
-                            <Switch IsToggled="{Binding EditRecorrente}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />
-                            <Label Grid.Column="1" Text="Despesa recorrente" VerticalOptions="Center" HorizontalOptions="Start" Margin="0" Padding="0" />
-                        </Grid>
-                        <Label Text="Ative caso essa despesa se repete todo mês" FontSize="12" TextColor="#6B7280" />
-                    </VerticalStackLayout>
+                    <!-- Bloco EditRecorrente Removido -->
                     <VerticalStackLayout IsVisible="{Binding IsEditPagaVisible}" Spacing="4">
                         <Grid ColumnDefinitions="48,Auto" ColumnSpacing="4" HorizontalOptions="Start" VerticalOptions="Center">
                             <Switch IsToggled="{Binding EditPaga}" Grid.Column="0" WidthRequest="48" MaximumWidthRequest="48" HorizontalOptions="Start" VerticalOptions="Center" />

@@ -409,7 +409,18 @@ public partial class ExtratoViewModel : ObservableObject
         }
         else
         {
-            await _financeService.DeleteDespesaAsync(item.Id);
+            bool excluirFuturas = false;
+            var despesa = await _financeService.GetDespesaAsync(item.Id);
+            if (despesa != null && despesa.GrupoId.HasValue)
+            {
+                excluirFuturas = await _dialogService.ShowConfirmationAsync(
+                    "Excluir parcelas futuras?",
+                    "Esta despesa faz parte de um grupo. Deseja excluir APENAS esta despesa ou também TODAS as parcelas futuras?",
+                    "Todas as futuras",
+                    "Apenas esta");
+            }
+
+            await _financeService.DeleteDespesaAsync(item.Id, excluirFuturas);
         }
 
         if (_editingId == item.Id)
@@ -452,6 +463,17 @@ public partial class ExtratoViewModel : ObservableObject
         }
         else
         {
+            bool atualizarFuturas = false;
+            var despesa = await _financeService.GetDespesaAsync(_editingId.Value);
+            if (despesa != null && despesa.GrupoId.HasValue)
+            {
+                atualizarFuturas = await _dialogService.ShowConfirmationAsync(
+                    "Atualizar parcelas futuras?",
+                    "Deseja aplicar essa alteração apenas a esta despesa ou também a todas as parcelas futuras deste grupo?",
+                    "Também às futuras",
+                    "Apenas a esta");
+            }
+
             await _financeService.UpdateDespesaAsync(
                 _editingId.Value,
                 EditDescricao.Trim(),
@@ -459,7 +481,7 @@ public partial class ExtratoViewModel : ObservableObject
                 EditData,
                 null,
                 EditVencimento,
-                EditRecorrente,
+                atualizarFuturas,
                 EditPaga);
         }
 

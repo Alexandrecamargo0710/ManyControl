@@ -22,6 +22,8 @@ public class Despesa
 
     public DateTime? DataPagamento { get; set; }
 
+    public Guid? GrupoId { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

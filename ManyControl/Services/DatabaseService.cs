@@ -101,6 +101,7 @@ public class DatabaseService
     {
         await TryExecuteAsync(context, "ALTER TABLE Despesas ADD COLUMN Paga INTEGER NOT NULL DEFAULT 0");
         await TryExecuteAsync(context, "ALTER TABLE Despesas ADD COLUMN DataPagamento TEXT NULL");
+        await TryExecuteAsync(context, "ALTER TABLE Despesas ADD COLUMN GrupoId TEXT NULL");
     }
 
     private static async Task TryExecuteAsync(FinanceDbContext context, string sql)

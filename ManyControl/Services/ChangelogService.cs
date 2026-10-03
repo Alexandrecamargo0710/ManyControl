@@ -38,7 +38,7 @@ public class ChangelogService
             Numero = "v1.0.20",
             DataLancamento = "03/09/2026",
             Titulo = "Correções na Sincronização e Backups",
-            IsAtual = true,
+            IsAtual = false,
             Destaques =
             [
                 new DestaqueInfo
@@ -204,3 +204,4 @@ public class ChangelogService
 
     public List<VersaoInfo> GetHistorico() => _historico;
 }
+
