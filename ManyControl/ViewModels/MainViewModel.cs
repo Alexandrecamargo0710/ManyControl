@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -85,8 +85,8 @@ public partial class MainViewModel : ObservableObject
     public partial string UpdateProgressText { get; set; } = string.Empty;
 
     // Listas Recentes do Mês
-    public ObservableCollection<Receita> ReceitasRecentes { get; } = new();
-    public ObservableCollection<Despesa> DespesasRecentes { get; } = new();
+    [ObservableProperty] public partial ObservableCollection<Receita> ReceitasRecentes { get; set; } = new();
+    [ObservableProperty] public partial ObservableCollection<Despesa> DespesasRecentes { get; set; } = new();
 
     // Formulário Nova Receita
     [ObservableProperty]
@@ -205,13 +205,13 @@ public partial class MainViewModel : ObservableObject
 
         var receitasTask = _financeService.GetReceitasPorMesAsync(ano, mes);
         var despesasTask = _financeService.GetDespesasPorMesAsync(ano, mes);
-        var saldoTask = _financeService.GetSaldoAsync();
+        
 
-        await Task.WhenAll(receitasTask, despesasTask, saldoTask);
+        await Task.WhenAll(receitasTask, despesasTask);
 
         var receitasDoMes = await receitasTask;
         var despesasDoMes = await despesasTask;
-        Saldo = await saldoTask;
+        
 
         var totalReceitasRecebidas = receitasDoMes.Where(r => r.Recebida).Sum(r => r.Valor);
         TotalReceitasPendentes = receitasDoMes.Where(r => !r.Recebida).Sum(r => r.Valor);
@@ -220,18 +220,8 @@ public partial class MainViewModel : ObservableObject
         BalancoMes = ReceitasMes - DespesasMes;
         DespesasPagasMes = despesasDoMes.Where(d => d.Paga).Sum(d => d.Valor);
         DespesasPendentesMes = despesasDoMes.Where(d => !d.Paga).Sum(d => d.Valor);
-
-        ReceitasRecentes.Clear();
-        foreach (var receita in receitasDoMes.Take(6))
-        {
-            ReceitasRecentes.Add(receita);
-        }
-
-        DespesasRecentes.Clear();
-        foreach (var despesa in despesasDoMes.Take(6))
-        {
-            DespesasRecentes.Add(despesa);
-        }
+        ReceitasRecentes = new ObservableCollection<Receita>(receitasDoMes.Take(6));
+        DespesasRecentes = new ObservableCollection<Despesa>(despesasDoMes.Take(6));
 
         LastSyncText = _syncService.GetLastSyncText();
         LastSyncModeText = _syncService.GetLastSyncModeText();
@@ -282,15 +272,6 @@ public partial class MainViewModel : ObservableObject
                     "É o que sobrou (ou faltou) exclusivamente neste mês selecionado.\n\n" +
                     "• Fórmula: Receitas do Mês − Despesas do Mês\n\n" +
                     "Mostra se as suas contas fecharam no positivo ou negativo no período.",
-                    "Entendi");
-                break;
-
-            case "saldo":
-                await _dialogService.ShowAlertAsync(
-                    "Saldo Geral (Conta / Total)",
-                    "É o dinheiro total acumulado na sua conta/carteira desde o início do uso do app.\n\n" +
-                    "• Fórmula: Todas as Receitas de sempre − Todas as Despesas de sempre\n\n" +
-                    "Representa o seu saldo real consolidado.",
                     "Entendi");
                 break;
 

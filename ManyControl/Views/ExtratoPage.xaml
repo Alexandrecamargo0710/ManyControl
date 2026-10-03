@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:ManyControl.ViewModels"
@@ -303,17 +303,17 @@
                         <Label Grid.Column="1" Text="{Binding TotalTransacoesMes, StringFormat='{0} lançamentos'}" FontSize="13" TextColor="#9CA3AF" VerticalOptions="Center" />
                     </Grid>
 
-                    <CollectionView ItemsSource="{Binding Transacoes}">
-                        <CollectionView.EmptyView>
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Transacoes}">
+                        <BindableLayout.EmptyView>
                             <VerticalStackLayout Padding="30" Spacing="8" HorizontalOptions="Center">
                                 <Label Text="Nenhum lançamento encontrado neste mês."
                                        FontSize="16"
                                        TextColor="#9CA3AF"
                                        HorizontalOptions="Center" />
                             </VerticalStackLayout>
-                        </CollectionView.EmptyView>
+                        </BindableLayout.EmptyView>
 
-                        <CollectionView.ItemTemplate>
+                        <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="vm:TransacaoItemViewModel">
                                 <Border Style="{StaticResource CardBorderStyle}"
                                         Margin="0,0,0,8"
@@ -422,8 +422,8 @@
                                     </VerticalStackLayout>
                                 </Border>
                             </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
 
             </VerticalStackLayout>

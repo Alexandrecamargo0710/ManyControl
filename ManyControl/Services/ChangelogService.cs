@@ -35,10 +35,34 @@ public class ChangelogService
     [
         new VersaoInfo
         {
+            Numero = "v1.0.25",
+            DataLancamento = "03/10/2026",
+            Titulo = "Otimização Extrema de Performance",
+            IsAtual = true,
+            Destaques =
+            [
+                new DestaqueInfo
+                {
+                    Tipo = "Melhoria",
+                    Titulo = "App Super Rápido",
+                    Descricao = "Reescrevemos o motor visual das listas. O aplicativo agora carrega instantaneamente ao trocar de tela ou passar de mês.",
+                    Icone = "⚡"
+                },
+                new DestaqueInfo
+                {
+                    Tipo = "Ajuste",
+                    Titulo = "Balanço do Mês Ampliado",
+                    Descricao = "O card do Balanço do Mês foi ampliado para dar total destaque. O card de Saldo Geral foi removido para focar no que importa.",
+                    Icone = "⚖️"
+                }
+            ]
+        },
+        new VersaoInfo
+        {
             Numero = "v1.0.24",
             DataLancamento = "03/10/2026",
             Titulo = "Novo Ícone e Despesas Inteligentes",
-            IsAtual = true,
+            IsAtual = false,
             Destaques =
             [
                 new DestaqueInfo

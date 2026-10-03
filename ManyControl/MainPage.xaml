@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:ManyControl.ViewModels"
@@ -109,34 +109,17 @@
                     <Border Style="{StaticResource CardBorderStyle}"
                             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}"
                             Stroke="{AppThemeBinding Light=#E2E8F0, Dark=#374151}"
-                            Grid.Row="0" Grid.Column="0" Padding="12">
+                            Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Padding="12">
                         <VerticalStackLayout Spacing="2">
                             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
                                 <Label Text="Balanço do Mês" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" FontSize="12" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="ⓘ" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
+                                <Label Grid.Column="1" Text="?" TextColor="{AppThemeBinding Light=#64748B, Dark=#9CA3AF}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
                                     <Label.GestureRecognizers>
                                         <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="balanco" />
                                     </Label.GestureRecognizers>
                                 </Label>
                             </Grid>
                             <Label Text="{Binding BalancoMes, StringFormat='R$ {0:N2}'}" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="20" FontAttributes="Bold" />
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <Border Style="{StaticResource CardBorderStyle}"
-                            BackgroundColor="{AppThemeBinding Light=#EEF2FF, Dark=#1E1B4B}"
-                            Stroke="{AppThemeBinding Light=#C7D2FE, Dark=#3730A3}"
-                            Grid.Row="0" Grid.Column="1" Padding="12">
-                        <VerticalStackLayout Spacing="2">
-                            <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                                <Label Text="Saldo Geral (Conta)" TextColor="{AppThemeBinding Light=#4F46E5, Dark=#A5B4FC}" FontSize="12" VerticalOptions="Center" />
-                                <Label Grid.Column="1" Text="ⓘ" TextColor="{AppThemeBinding Light=#4F46E5, Dark=#A5B4FC}" FontSize="14" FontAttributes="Bold" VerticalOptions="Center" Padding="6,0">
-                                    <Label.GestureRecognizers>
-                                        <TapGestureRecognizer Command="{Binding ExplicarMetricaCommand}" CommandParameter="saldo" />
-                                    </Label.GestureRecognizers>
-                                </Label>
-                            </Grid>
-                            <Label Text="{Binding Saldo, StringFormat='R$ {0:N2}'}" TextColor="{AppThemeBinding Light=#1E1B4B, Dark=White}" FontSize="20" FontAttributes="Bold" />
                         </VerticalStackLayout>
                     </Border>
 
@@ -265,8 +248,8 @@
                 <VerticalStackLayout Spacing="16">
                     <VerticalStackLayout Spacing="8">
                         <Label Text="Despesas do mês" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="18" FontAttributes="Bold" />
-                        <CollectionView ItemsSource="{Binding DespesasRecentes}">
-                            <CollectionView.ItemTemplate>
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding DespesasRecentes}">
+                            <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="models:Despesa">
                                     <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,8" Padding="14,10"
                                             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}"
@@ -322,14 +305,14 @@
                                         </VerticalStackLayout>
                                     </Border>
                                 </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Spacing="8">
                         <Label Text="Receitas do mês" TextColor="{AppThemeBinding Light=#0F172A, Dark=White}" FontSize="18" FontAttributes="Bold" />
-                        <CollectionView ItemsSource="{Binding ReceitasRecentes}">
-                            <CollectionView.ItemTemplate>
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding ReceitasRecentes}">
+                            <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="models:Receita">
                                     <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,8" Padding="14,10"
                                             BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#1F2937}"
@@ -380,8 +363,8 @@
                                         </VerticalStackLayout>
                                     </Border>
                                 </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
                     </VerticalStackLayout>
                 </VerticalStackLayout>
             </VerticalStackLayout>

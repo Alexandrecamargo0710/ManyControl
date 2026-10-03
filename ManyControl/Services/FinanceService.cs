@@ -1,4 +1,4 @@
-using ManyControl.Data;
+﻿using ManyControl.Data;
 using ManyControl.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -156,21 +156,6 @@ public class FinanceService
         return await context.Despesas
             .Where(d => d.DeletedAt == null && d.Data.Year == ano && d.Data.Month == mes && !d.Paga)
             .SumAsync(d => (decimal?)d.Valor) ?? 0m;
-    }
-
-    public async Task<decimal> GetSaldoAsync()
-    {
-        await using var context = await _contextFactory.CreateDbContextAsync();
-
-        var receitas = await context.Receitas
-            .Where(r => r.DeletedAt == null && r.Recebida)
-            .SumAsync(r => (decimal?)r.Valor) ?? 0m;
-
-        var despesas = await context.Despesas
-            .Where(d => d.DeletedAt == null)
-            .SumAsync(d => (decimal?)d.Valor) ?? 0m;
-
-        return receitas - despesas;
     }
 
     public async Task<DateTime> GetLastChangedAtUtcAsync()

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -71,7 +71,7 @@ public partial class ExtratoViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsCarregando { get; set; }
 
-    public ObservableCollection<TransacaoItemViewModel> Transacoes { get; } = new();
+    [ObservableProperty] public partial ObservableCollection<TransacaoItemViewModel> Transacoes { get; set; } = new();
 
     // Modal de Edição
     [ObservableProperty]
@@ -246,12 +246,7 @@ public partial class ExtratoViewModel : ObservableObject
                     });
                 }
             }
-
-            Transacoes.Clear();
-            foreach (var item in lista.OrderByDescending(x => x.Data).ThenByDescending(x => x.Descricao))
-            {
-                Transacoes.Add(item);
-            }
+            Transacoes = new ObservableCollection<TransacaoItemViewModel>(lista.OrderByDescending(x => x.Data).ThenByDescending(x => x.Descricao));
 
             TotalTransacoesMes = Transacoes.Count;
         }
